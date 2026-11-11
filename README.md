@@ -36,7 +36,7 @@ Başka bir statik host için yalnızca `dist` içeriğini web köküne yükleyin
 - Mavi üçgen / “Room”: odaya dön.
 - Küçük mavi tuş / Sound: sesi aç veya kapat.
 - Ekran menüsü fare ve dokunmayla da çalışır. Mobilde ek kontrol düğmeleri bulunur.
-- “Room” ile dönünce gezdiğiniz açı ve yakınlık korunur. Kamera mobilyaların üzerinden geçerek seçilen uzaklığı korur.
+- “Room” ile dönünce gezdiğiniz açı ve yakınlık korunur. Kamera, görüşü açmak için kendiliğinden yükselmez. Yalnızca doğrudan bir yüzeye giren kamera hareketi durdurulur.
 - Portfolyo içindeki metinler parmakla kaydırılır; oda sürüklemesi bu sırada devre dışıdır. Yatay telefonda ekran odaklı yakınlaşma kullanılır.
 - Hareket azaltma tercihi açıkken kamera geçişi anında gerçekleşir.
 - WebGL desteklenmezse metin portfolyosu açılır.
@@ -47,13 +47,17 @@ Başka bir statik host için yalnızca `dist` içeriğini web köküne yükleyin
 
 `src/bmo-layout.js`: ortak tuş düzlemi, model ölçüleri ve küçük BMO’nun sahne yerleşimi.
 
-`src/room.js`: gerçek 3D oda, özel cel shader, vektör ahşap damarları, kıvrımlı mobilyalar ve gramofon.
+`src/room.js`: kompakt 3D oda, sabit gölgeler, kıvrımlı mobilyalar, fiziksel yerleşim ve gramofon.
 
 `references/treehouse-room.png`: yalnızca tasarım referansı; üretim klasörüne kopyalanmaz ve site tarafından yüklenmez.
 
 `src/main.js`: kamera, raycast tuşlar, ses ve CSS3D ekran.
 
 `src/navigation.js`: ekran boyutuna uygun yakın kamera ve BMO'nun içinden geçmeyen küresel kamera yolu.
+
+`src/room-geometry.js`: gerçek oyuklu ağaç geometrisi ve kompakt oda sınırları.
+
+`src/room-surfaces.js`: yüzeylere işlenen, mipmap filtreli ahşap, halı ve kadran çizimleri.
 
 `src/content.js` / `src/portfolio.js`: gerçek içerik ve menü yönetimi.
 
@@ -74,13 +78,20 @@ node scripts/render-check.mjs
 node scripts/model-check.mjs
 node scripts/room-check.mjs
 node scripts/orbit-check.mjs
+node scripts/detail-check.mjs
 ```
 
 Render kontrolleri Windows üzerinde Brave'in standart kurulum yolundaki izole bir headless test profiliyle çalışır; kullanıcının açık tarayıcısına bağlanmaz. Farklı bilgisayarda scriptlerdeki `executablePath` değerini kendi Chromium tarayıcınıza göre ayarlayın. `artifacts/` yerel test çıktılarıdır ve Git'e yüklenmez.
 
 Telefon, tablet, yatay ekran, masaüstü ve geniş ekran boyutları; gerçek pointer/touch olaylarıyla sürükleme, pinch, iptal ve metin kaydırma kontrol edilir. Bunlar tarayıcı emülasyonudur; fiziksel telefonun kare hızı, Safari adres çubuğu ve donanım dokunma hissi ölçülmemiştir.
 
-## Eski sürüme dönüş
+## Detay düzeltmesinden önceki sürüme dönüş
+
+Bu düzeltmeden önceki tam kaynak: `Portfolio-Backups/BMO-before-room-polish-v1.3.0-2026-11-11.zip`. Git etiketi: `checkpoint-before-room-polish-v1.3.0`. Cloudflare sürümü: `d0730143-d5a7-4fae-be0d-55a41deb6c20`.
+
+`RESTORE_BEFORE_ROOM_POLISH.cmd` bu sürümü geri getirir. Kaynak ZIP de bağımsız yeniden yayına izin verir.
+
+## Daha eski sürümler
 
 360° gezintiden hemen önce beğenilen tam 3D oda: Cloudflare `3cf52e69-45b6-4d22-a81b-657d83f304ab`, Git etiketi `checkpoint-before-360-v1.2.0`, kaynak commit `0e0b8b61038498fae5a6c8aa7a56560dd9a645ee`.
 

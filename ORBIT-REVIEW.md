@@ -1,22 +1,18 @@
-# 360° room and responsive verification · v1.3.0
+# Camera and responsive verification · v1.4.0
 
-## Verified behavior
+- Real mouse input crossed 448° without a horizontal clamp at the default orbit.
+- Horizontal mouse and keyboard orbits preserved camera height to within 0.000001 world units. Occlusion never triggers lifting.
+- Twenty-four default angles and 72 additional high/far, low/far and low/near rendered angles filled all four viewport corners with room geometry. Actual surface collisions may stop motion; target visibility is deliberately not a collision rule.
+- Home restored the original view, spherical approach remained attached to the CSS3D screen, and Room restored the explored angle.
+- Normal inertia settled; reduced motion removed automatic travel and inertia.
+- Native touch sequences passed orbit, pinch, cancellation, article scrolling and orientation changes.
+- Twelve furniture feet met the actual floor/rug plane. Surface and close-up checks are described in `ROOM-REVIEW.md` and `scripts/detail-check.mjs`.
+- The existing BMO review passed 52 components, eight physical control actions and seven review angles. Approved source checksums remained unchanged.
+- No browser application or shader errors were recorded.
 
-- Real mouse drag crosses 597° without a horizontal clamp. Hover alone leaves the view still. Dragging BMO does not activate its screen.
-- Twenty-four default orbit angles and 72 additional rendered angles at high/far, low/far and low/near limits retain full room coverage and a clear camera/target sightline. Requested zoom is preserved during automatic obstacle avoidance.
-- Original composition resets exactly with Home. Entering from behind uses a spherical approach; returning restores the explored angle. Normal inertia settles and reduced motion removes automatic travel.
-- All 12 flat furniture feet meet the actual floor/rug plane within 0.000001 world units. Solid tapered stems, joints and localized soft shadows replace the floating appearance.
-- The room has 504 finite components, including rear/side walls and trunks continued through the ceiling. Actual 4K, alternate views, wireframe and the high/far view were inspected.
-- BMO geometry, materials, face, buttons and portfolio source files match the approved version. Its 52 components, seven review angles and eight physical control actions passed existing checks.
-- Native touch input sequences exercise one-finger orbit, two-finger pinch, pointer cancellation and native article scrolling. Orientation change keeps the open article.
-- Compact menu targets remain at least 44 CSS pixels tall. Coarse pointers receive visible 44px alternative controls; short landscape moves these beside the LCD. Controls do not cover the display.
-- Viewport remains edge to edge, initial mobile layout does not widen the page, and browser page zoom is not disabled.
-- Screen alignment during camera travel, About scrolling, external confirmation cancellation, resume availability and readable WebGL fallback passed.
-- Eleven unit tests, JavaScript syntax and production build passed. Browser suites recorded no application or shader errors.
+## Touch layout matrix
 
-## Touch viewport matrix
-
-| Viewport | Smallest menu target height | WebGL DPR |
+| Viewport | Smallest menu target | WebGL DPR |
 |---|---:|---:|
 | 320 × 568 | 46.90px | 1.5 |
 | 360 × 800 | 52.77px | 1.5 |
@@ -32,18 +28,16 @@
 | 1920 × 1080 | 77.53px | 1 |
 | 2560 × 1080 | 77.53px | 1 |
 
-Additional model composition checks: 320 × 700, 390 × 844, 1024 × 768, 1440 × 810 and 2560 × 1080. A 2560 × 1440 viewport with 1.5 device scale produced a fresh 3840 × 2160 render.
+Model composition checks also covered 320 × 700, 390 × 844, 1024 × 768, 1440 × 810 and 2560 × 1080. An actual 3840 × 2160 render was captured.
 
-## Limits and reproducibility
+## Test scope
 
-The tests use an isolated headless Chromium profile, software WebGL and touch/viewport emulation. No physical phone was attached. Hardware frame rate, Safari browser-bar behavior, physical safe-area insets and touch feel remain unmeasured; emulation is not a substitute for those device checks.
+The suites use an isolated Chromium profile, software WebGL and touch/viewport emulation. No physical phone was attached. These checks do not measure physical-device frame rate, Safari browser-bar behavior, hardware safe-area insets or physical touch feel.
 
-Run `npm test`, `npm run check`, then the four scripts documented in README while the local dev server is running. Measurements and screenshots are stored in ignored `artifacts/`.
+## Restore
 
-## Restore point
+Pre-polish checkpoint: `checkpoint-before-room-polish-v1.3.0` → `5142c8127a875821663df8b68812dcda1e531ddd`.
 
-Git: `checkpoint-before-360-v1.2.0` → `0e0b8b61038498fae5a6c8aa7a56560dd9a645ee`.
+Cloudflare version: `d0730143-d5a7-4fae-be0d-55a41deb6c20`.
 
-Cloudflare: `3cf52e69-45b6-4d22-a81b-657d83f304ab`.
-
-Complete source/build backup: desktop `Portfolio-Backups/BMO-before-360-v1.2.0-2026-11-11.zip`. `RESTORE_BEFORE_360.cmd` targets that Cloudflare version; the ZIP also permits an independent rebuild and redeployment.
+Complete desktop backup: `Portfolio-Backups/BMO-before-room-polish-v1.3.0-2026-11-11.zip`. `RESTORE_BEFORE_ROOM_POLISH.cmd` targets that version. Earlier restore points are retained.
