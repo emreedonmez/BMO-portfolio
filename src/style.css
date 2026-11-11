@@ -22,3 +22,7 @@
  #portfolio{padding:21px 25px}.os-status{font-size:14px;padding-bottom:10px}.screen-title{font-size:23px;margin:16px 0 6px}.screen-subtitle{font-size:18px;line-height:1.4;margin-bottom:12px}.screen-menu{grid-template-columns:1fr;gap:5px}.screen-menu button{min-height:37px;padding:7px 12px;font-size:18px;gap:15px}.screen-bottom{font-size:14px;left:25px;right:25px;bottom:13px}.screen-content{font-size:22px;height:324px}.screen-content h1{font-size:23px}.screen-content h2{font-size:19px}.screen-link{font-size:21px}.skill-list li{font-size:17px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Physical controls remain unobstructed; keyboard alternatives appear on focus. */
+@media(min-width:701px){.control-guide{left:18px;bottom:16px;transform:none}.accessible-controls{left:18px;bottom:72px;transform:none;opacity:0;pointer-events:none}.accessible-controls:focus-within{opacity:1;pointer-events:auto}.screen-content{font-size:20px}}
+@media(max-width:700px){.control-guide{display:none!important}.accessible-controls{bottom:max(12px,env(safe-area-inset-bottom));}.accessible-controls button{min-height:44px}}

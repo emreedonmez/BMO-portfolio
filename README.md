@@ -1,6 +1,6 @@
 # Emre's BMO Portfolio
 
-Emre Dönmez'in Three.js ile hazırlanan etkileşimli 3D portfolyosu. Tamamen yerel paketlenen model, oda, font ve ekran. Üretimde dış CDN veya model servisi gerekmez.
+Emre Dönmez'in Three.js ile hazırlanan etkileşimli 3D portfolyosu. Paylaşılan çizgi film karesi tam ekran arka plan olarak kullanılır; küçük BMO gerçek 3D modeldir. Model, görsel, font ve ekran yerel paketlenir. Üretimde dış CDN veya model servisi gerekmez.
 
 ## Bilgisayarda açma
 
@@ -38,7 +38,11 @@ Başka bir statik host için yalnızca `dist` içeriğini web köküne yükleyin
 
 ## Dosyalar
 
-`src/scene.js`: kodla oluşturulmuş BMO ve oda geometrileri, ışık, dokular.
+`src/scene.js`: düz renkli toon malzemeler, ince konturlar ve gövdeye yakın tuşlarla BMO geometrisi.
+
+`src/bmo-layout.js`: ortak tuş düzlemi, model ölçüleri ve küçük BMO’nun sahne yerleşimi.
+
+`public/treehouse-room.png`: kullanıcının verdiği oda görselinin değiştirilmemiş kopyası. Ekranı boşluk bırakmadan kaplar; farklı en-boy oranlarında kenarlar kırpılır.
 
 `src/main.js`: kamera, raycast tuşlar, ses ve CSS3D ekran.
 
@@ -65,14 +69,14 @@ Render kontrolleri Windows üzerinde Brave'in standart kurulum yolundaki izole b
 
 ## Eski sürüme dönüş
 
-Yenilemeden önceki Cloudflare sürümü: `b5e648f8-dd3e-4172-bb04-5150a8062b48`.
+Bu çizgi film sahnesinden önceki 3D diorama sürümü: `00b1e0f9-fd05-4fab-a09d-44802074a923`.
 
 ```sh
-npx wrangler rollback b5e648f8-dd3e-4172-bb04-5150a8062b48
+npx wrangler rollback 00b1e0f9-fd05-4fab-a09d-44802074a923
 ```
 
 Cloudflare sürüm saklama süresine bağlıdır. Kalıcı kaynak yedeği `legacy/` ve masaüstündeki `Portfolio-Backups/Portfolio-before-BMO-2026-11-11.zip` içindedir. Eski siteyi bağımsız statik yayınlamak için `legacy/` içeriğini kullanın.
 
 ## Kaynaklar ve lisanslar
 
-Model ve oda bu proje için geometri koduyla oluşturuldu; araştırılan üçüncü taraf model dosyaları indirilmedi veya dağıtılmadı. BMO, Adventure Time karakteridir. Three.js ve font lisansları `public/` içinde korunmuştur.
+BMO modeli bu proje için geometri koduyla oluşturuldu; oda arka planı kullanıcının sağladığı çizimdir; araştırılan üçüncü taraf model dosyaları indirilmedi veya dağıtılmadı. BMO, Adventure Time karakteridir. Three.js ve font lisansları `public/` içinde korunmuştur.

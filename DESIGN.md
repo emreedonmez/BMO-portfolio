@@ -1,35 +1,61 @@
-# BMO / Emre Dönmez portfolio
+# BMO · Cartoon scene redesign
 
-## Brief and content
-A full-screen interactive 3D personal portfolio. BMO retains the character's teal rounded box, mint display, black face, side lettering and speaker holes, yellow cross, blue triangle, red and green circular buttons, arms and seated legs. The supplied frame is the primary character reference. No invented work or placeholder copy.
+## Exact scene reference
 
-## Composition
-A compact cutaway treehouse room fills the viewport. Warm timber planks, round landscape window, exposed beams, a small upholstered sofa, books, plant, lamp and a woven circular rug form a quiet lived-in setting. BMO is the central subject, seated on the floor, with legs extending toward the camera. Room props remain secondary. Warm wood and cream contrast with BMO's teal, yellow and red.
+The client supplied a 735 × 414 treehouse illustration with violet timber, lavender floorboards, a purple chair, gramophone and foreground table. `public/treehouse-room.png` is an unmodified byte-for-byte copy of that image. It is the full-screen background, rather than a room recreated with primitive 3D furniture.
 
-Room camera: perspective three-quarter view, targeting BMO. Portfolio camera: front-facing, close enough to read the LCD while retaining actual model controls. A single scene and model survive the transition. Camera position and target interpolate together over 1.25 seconds; reduced motion changes state immediately. Escape reverses the camera at the menu. No continuous camera drift.
+The art uses `object-fit: cover`, centered, with no page padding or surrounding surface. Other aspect ratios crop the art at its edges instead of stretching it or adding blank bars. The background remains visible during the portfolio camera move.
 
-## Implementation decisions
-Three.js with procedural geometry, RoundedBoxGeometry, outlined curves and canvas textures. CSS3DRenderer anchors the accessible HTML portfolio to the actual screen plane. The display face uses a local canvas texture in room mode. Screen menus and raycast model buttons share one state/action function. No model download or external runtime/CDN dependency. The browser loads the complete scene locally bundled by Vite.
+## Composition and visual system
 
-Sections: About, Projects, Resume, LinkedIn, GitHub, Contact. About retains the existing English introduction. Projects describes the real İpucum project present in the supplied CV. Resume uses the supplied PDF and extracted education, skills and certifications. External links retain their confirmations. Email remains mail@emreedonmez.com. No analytics or forms.
+Opening scene: a small seated BMO on the open floor in front of the chair, near the horizontal center. Its full silhouette occupies approximately 21.5% of viewport height, including limbs. The anchor is mapped through the background's cover crop and clamped to the visible center floor. No oversized heading, identity block, model platform or diorama edges appear outside the scene.
 
-Controls: mouse/touch on BMO opens; actual yellow cross navigates, red circle selects, green circle returns, blue triangle returns to room. Equivalent accessible HTML controls and keyboard arrows/Enter/Escape work. Mobile uses a closer room composition and a screen-first portfolio framing; on-screen control alternatives remain available. Scrollable text is keyboard and touch accessible. Local synthesized sounds are optional. No downloaded copyrighted audio.
+Palette: plum ink `#292133`, room violet from the supplied art, teal shell `#78b9a5`, mint display `#d2f2cc`, yellow cross `#f7d661`, red `#de4568`, blue `#78c1d4`, green `#b3df58`.
 
-## Delivery
-Desktop project with npm scripts for development/build/deploy, locked dependencies and Wrangler static-assets configuration. Same Worker and both existing custom domains. Prior local project ZIP, live static files and Cloudflare deployment version archived separately. Public GitHub repo includes the original site under legacy/ and staged commits for design, scene, interaction and deployment. No tokens or account/session files enter Git or the deployment ZIP.
+The body and limbs use discrete toon shading. The display and button faces use flat fills. Rounded volumes retain actual depth; thin contours make their silhouette consistent with the illustration. No PBR shine, metallic surface, external cast shadow or self-shadow is applied to the character. A painted transparent contact shadow anchors it to the floor.
 
-## Verification at completion
-Syntax/build, actual section navigation, model button actions, camera entry/exit, external confirmation cancel, PDF link, mobile layout, WebGL failure fallback and reduced motion. Deploy only after build succeeds. Confirm Cloudflare returns a successful deployment and verify served production assets. Existing browser UI automation is unavailable because its safety layer could not verify the open browser URL; do not work around that restriction through another UI driver.
+Interface: the existing Pixel font stays inside the display, with readable monospace body text. Outside the character only small functional controls appear. Desktop keyboard alternatives become visible on focus. Mobile alternatives sit below the character without covering its controls.
 
-## Research
-- Supplied character frame: primary shape, proportions and control arrangement.
-- https://sketchfab.com/3d-models/bmo-adventure-time-26033cc012124739a5a8acd6bc96b71f — examined model listing; not downloaded.
-- https://sketchfab.com/3d-models/bmo-from-adventure-time-f8505fec4620480ab15f2f49c08d74ff — alternative model reference.
-- https://sketchfab.com/3d-models/bmo-adventure-time-ffeb3e9ab97e4e3dbed4ddc0650d8b9b — alternative proportions reference.
-- https://github.com/MedTahiri/BMO — procedural modeling approach reference, no code/assets copied.
-- https://www.flickr.com/photos/84568447@N00/3100870822 — Fred Seibert / Ghostshrimp production background, room reference only.
-- https://www.behance.net/gallery/40330989/Exploring-Land-of-Ooo-Inside-the-Tree-Fort — spatial research only.
-- https://threejs.org/docs/pages/RoundedBoxGeometry.html and CSS3DRenderer documentation — implementation.
-- https://developers.cloudflare.com/workers/static-assets/binding/ and configuration/routing/custom-domains/ — deployment.
+## Model plan and individual review
 
-The client supplied exact character, scene, palette and interactions override generic landing-page template/dealing rules in the design skill. The result is a navigable 3D scene rather than a conventional marketing page.
+`src/bmo-layout.js` is the shared geometry specification. The shell is 2.65 wide, 3.35 high and 1.14 deep. All five main controls mount at Z = 0.580, have depth 0.024, and press inward by 0.009. Their resting front surface is only 0.022 ahead of the shell. All control object rotations are zero; no cap independently tilts toward the viewer.
+
+The model contains 52 named mesh components, reviewed individually:
+
+- Rounded shell: continuous surface and narrow silhouette contour.
+- Screen border and rounded display: matching proportions and shared CSS3D plane.
+- Cartridge recess and two small blue bars: surface drawings, no raised ledges.
+- Yellow cross, blue triangle, red/green/blue circles: clear spacing, closed contours, aligned mounting planes and real raycast actions.
+- Both side labels: tangent to the side panels rather than floating outside them.
+- Eighteen speaker holes: three rows per side, no overlap with the front face.
+- Two curved arms, palms and twelve finger/tip meshes: continuous attachment and rounded ends.
+- Two extended legs and upturned feet: seated pose and contact with the illustrated floor.
+- Contact shadow: transparent painted plane, never a shadow receiver crossing the shell.
+
+The visual contour lines are excluded from raycasting. Only physical meshes receive button input; a contour's line-picking tolerance cannot activate an adjacent control.
+
+## Camera and interaction
+
+One transparent Three.js scene overlays the supplied art. Clicking BMO moves the perspective camera from a small three-quarter composition to a front-facing close-up. Position, target and lens offset interpolate together over 1.25 seconds. The background gently enlarges around the same floor anchor. Escape reverses the transition; reduced-motion preference changes views immediately.
+
+The accessible HTML display is a CSS3DObject in the same camera coordinates as the model. Its aspect ratio exactly matches the physical display. Mid-transition automated measurements compare DOM bounds against the projected model corners.
+
+The existing About, Projects, Resume, LinkedIn, GitHub and Contact content is preserved. Camera and scene changes do not replace portfolio information.
+
+## Verification
+
+- Geometry checks: finite bounds for all 52 named mesh components; actual front-face coplanarity, depth, rotations and separation.
+- Seven visual angles: front, left, right, high, low and both steep side views.
+- Real model raycasts: all four cross directions, red select, green back, blue sound and triangle room return.
+- Compositions: 320×700, 390×844, 1024×768, 1440×810 and 2560×1080.
+- Original background dimensions, full-viewport coverage, no scrolling or clipped opening character.
+- Mouse, mobile touch, keyboard, text scrolling, external confirmation cancellation, resume PDF and WebGL-unavailable fallback.
+- No page runtime errors in the navigation/render run.
+
+The Computer Use safety layer cannot verify the URL of the user's existing browser in this session. That UI is left alone. Local software QA uses an isolated headless Chromium profile; it does not connect to that browser.
+
+## History and resources
+
+Previous diorama release retained under Git tag `v1.0.0-bmo`, Cloudflare version `00b1e0f9-fd05-4fab-a09d-44802074a923` and the desktop backup `Portfolio-Backups/BMO-before-cartoon-scene-2026-11-11.zip`.
+
+The supplied BMO frame from the original brief remains the shape, face and control reference. The supplied room image is now the actual background. Three.js geometry and CSS3DRenderer implement the interaction; no third-party model files are copied.

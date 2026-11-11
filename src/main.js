@@ -24,7 +24,7 @@ const portfolio=createPortfolio(screen,{onRoom:()=>setView(false),onSound:toggle
 
 function views(){
  const anchor=roomAnchor(innerWidth,innerHeight),aspect=innerWidth/innerHeight;
- const nearDistance=Math.max(6.15,2.55/(2*Math.tan(T.MathUtils.degToRad(21))*aspect)+.59);
+ const nearDistance=Math.max(6.6,2.55/(2*Math.tan(T.MathUtils.degToRad(21))*aspect)+.59);
  roomPose={position:new T.Vector3(-5.5,6.5,23),look:new T.Vector3(0,1.62,.28),offset:new T.Vector2(innerWidth/2-anchor.x,innerHeight/2-anchor.y)};
  closePose={position:new T.Vector3(0,1.85,nearDistance),look:new T.Vector3(0,1.85,0),offset:new T.Vector2()};
  art.style.transformOrigin=`${anchor.x}px ${anchor.y}px`;
@@ -87,7 +87,7 @@ try{
  views();camera.position.copy(roomPose.position);look.copy(roomPose.look);offset.copy(roomPose.offset);visibility();paint();
 
  const raycaster=new T.Raycaster(),pointer=new T.Vector2();let pointerDown=null;
- function hit(e){pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(bmo.group,true).find(h=>!h.object.userData.outline&&!h.object.userData.shadow)}
+ function hit(e){pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(bmo.group,true).find(h=>h.object.isMesh&&!h.object.userData.outline&&!h.object.userData.shadow)}
  renderer.domElement.addEventListener('pointerdown',e=>{if(e.button===0)pointerDown={x:e.clientX,y:e.clientY}});
  renderer.domElement.addEventListener('pointercancel',()=>pointerDown=null);
  renderer.domElement.addEventListener('pointerup',e=>{
@@ -126,6 +126,7 @@ try{
  }
  // Read-only measurements used to verify the actual rendered model and touch targets.
  window.portfolioDiagnostics=()=>({webgl:!renderer.getContext().isContextLost(),view:focused?'portfolio':'room',transitioning:!!transition,mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles,
+  screenCorners:[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,y])=>project(new T.Vector3(bmo.layout.screen.x+x*bmo.screenWidth/2,bmo.layout.screen.y+y*bmo.screenHeight/2,bmo.layout.screen.z))),
   bmoCenter:project(new T.Vector3(0,1.8,.57)),bmoBounds:projectedBounds(),modelAudit:bmo.audit(),
   buttons:bmo.controls.map(m=>({id:m.name,action:m.userData.action,...project(m.getWorldPosition(new T.Vector3()))})),
   dpadTargets:Object.fromEntries([['up',0,.20],['down',0,-.20],['left',-.20,0],['right',.20,0]].map(([key,x,y])=>[key,project(new T.Vector3(x,y,.013).applyMatrix4(bmo.controls[0].matrixWorld))]))

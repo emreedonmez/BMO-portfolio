@@ -28,7 +28,7 @@ function extrude(shape,depth){const g=new T.ExtrudeGeometry(shape,{depth,bevelEn
 function flatShape(shape){const g=new T.ShapeGeometry(shape,24);g.computeBoundingBox();const b=g.boundingBox,p=g.attributes.position,uv=g.attributes.uv;
  for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)-b.min.x)/(b.max.x-b.min.x),(p.getY(i)-b.min.y)/(b.max.y-b.min.y));return g;
 }
-function path(parent,name,points,r,material=skin){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return add(parent,name,new T.TubeGeometry(curve,40,r,12,false),material,[0,0,0],.008)}
+function path(parent,name,points,r,material=skin){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return add(parent,name,new T.TubeGeometry(curve,points.length>2?32:8,r,12,false),material,[0,0,0],.008)}
 function sphere(parent,name,r,pos,scale){const m=add(parent,name,new T.SphereGeometry(r,24,18),skin,pos,.008);if(scale)m.scale.set(...scale);return m}
 function makeFace(){
  const canvas=document.createElement('canvas');canvas.width=640;canvas.height=452;
@@ -56,7 +56,10 @@ export function createBMO(scene){
   if(spec.shape==='circle'){shape=new T.Shape();shape.absarc(0,0,spec.width/2,0,Math.PI*2,false)}
   else if(spec.shape==='triangle'){shape=new T.Shape();shape.moveTo(-spec.width/2,-spec.height/2);shape.lineTo(spec.width/2,-spec.height/2);shape.lineTo(0,spec.height/2);shape.closePath()}
   else {const a=spec.width/2,b=spec.width*.16;shape=new T.Shape();const p=[[-b,a],[b,a],[b,b],[a,b],[a,-b],[b,-b],[b,-a],[-b,-a],[-b,-b],[-a,-b],[-a,b],[-b,b]];shape.moveTo(...p[0]);p.slice(1).forEach(v=>shape.lineTo(...v));shape.closePath()}
-  const m=add(group,spec.id,extrude(shape,L.controlDepth),toon(spec.color),[spec.x,spec.y,L.controlZ],.008);
+  const buttonMaterial=[new T.MeshBasicMaterial({color:spec.color,toneMapped:false}),toon(spec.color)];
+  for(const material of buttonMaterial){material.polygonOffset=true;material.polygonOffsetFactor=1;material.polygonOffsetUnits=1}
+  const m=add(group,spec.id,extrude(shape,L.controlDepth),buttonMaterial,[spec.x,spec.y,L.controlZ],0);
+  const edges=new T.LineSegments(new T.EdgesGeometry(m.geometry,30),new T.LineBasicMaterial({color:'#292133',toneMapped:false}));edges.name=spec.id+'-contour';edges.userData.outline=true;m.add(edges);
   m.userData={action:spec.action,mountZ:L.controlZ,spec};controls.push(m);
  }
  const labelCanvas=document.createElement('canvas');labelCanvas.width=256;labelCanvas.height=640;
@@ -84,7 +87,11 @@ export function createBMO(scene){
  function setPressed(control,pressed){control.position.z=L.controlZ-(pressed?L.pressTravel:0)}
  function audit(){group.updateMatrixWorld(true);const components=[];
   group.traverse(m=>{if(!m.isMesh||m.userData.outline)return;m.geometry.computeBoundingBox();const bounds=m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld);components.push({name:m.name,type:m.geometry.type,finite:[...bounds.min.toArray(),...bounds.max.toArray()].every(Number.isFinite),vertices:m.geometry.attributes.position.count})});
-  return {components,controls:controls.map(m=>({id:m.name,action:m.userData.action,z:m.position.z,rotation:m.rotation.toArray().slice(0,3),depth:L.controlDepth,front:L.controlZ+L.controlDepth/2,protrusion:L.controlZ+L.controlDepth/2-L.body.depth/2}))};
+  return {components,controls:controls.map(m=>{
+   m.geometry.computeBoundingBox();const b=m.geometry.boundingBox,n=m.geometry.attributes.normal,p=m.geometry.attributes.position,frontZ=[];
+   for(let i=0;i<n.count;i++)if(n.getZ(i)>.99)frontZ.push(p.getZ(i));
+   return {id:m.name,action:m.userData.action,z:m.position.z,rotation:m.rotation.toArray().slice(0,3),depth:b.max.z-b.min.z,front:m.position.z+b.max.z,protrusion:m.position.z+b.max.z-L.body.depth/2,frontPlaneDeviation:Math.max(...frontZ)-Math.min(...frontZ),frontVertices:frontZ.length};
+  })};
  }
  return {group,face:display,controls,layout:L,screenPosition:new T.Vector3(L.screen.x,L.screen.y,L.screen.z),screenWidth:L.screen.width,screenHeight:L.screen.height,setPressed,audit,blink:face.paint};
 }
