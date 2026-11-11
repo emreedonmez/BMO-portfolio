@@ -30,7 +30,7 @@ The few illustrated album fronts are local 512px canvas vector drawings on physi
 
 ## Camera and input
 
-The same Three.js perspective camera renders the environment and BMO; the portfolio screen shares its projection through CSS3DRenderer. Clicking BMO travels through the actual room toward the model over 1.25 seconds. Near and far props exhibit different parallax. Fine-pointer room movement adds a restrained camera displacement; reduced motion disables it.
+The same Three.js perspective camera renders the environment and BMO; the portfolio screen shares its projection through CSS3DRenderer. Clicking BMO follows a shortest spherical arc toward the model over 1.25 seconds. OrbitControls supplies unlimited horizontal drag rotation and wheel/two-finger zoom. Requested and rendered poses are separated so collision avoidance can lift over furniture without changing zoom. Moving the mouse alone leaves the camera still. Reduced motion removes automatic travel and inertia. Home resets the original composition; Room restores the explored angle.
 
 Physical model buttons, mouse/touch screen menus, keyboard controls, confirmations, PDF and fallback text remain available. Rendering is demand-driven; static room frames are not continuously redrawn.
 
@@ -43,3 +43,11 @@ Source, Wrangler configuration, ready-built `dist/`, tests and licenses are incl
 Previous approved release: Git tag `v1.1.0-cartoon`, Cloudflare version `c3af8809-db94-4fab-96bc-3732d47aebbc`, and desktop backup `Portfolio-Backups/BMO-before-full-3D-room-2026-11-11.zip`.
 
 Implementation references: https://threejs.org/docs/pages/ShaderMaterial.html, https://threejs.org/docs/pages/BufferGeometry.html, https://threejs.org/docs/pages/ExtrudeGeometry.html.
+
+## 360° and mobile refinement
+
+The approved BMO and portfolio sources are preserved. Side/rear timber walls, a framed rear window, ceiling, rear trunks, books and a chest continue the existing violet cel palette around the full room. Twelve furniture feet have solid flat undersides, joints, tapered stems and soft shadows exactly at the floor or rug surface.
+
+Touch uses a single-finger orbit and two-finger zoom. Canvas pointer capture distinguishes dragging from tapping BMO and cancels tap activation on multiple pointers. Text scrolling remains native within the LCD. A compact two-column menu, large physical alternatives, safe-area spacing and a screen-first landscape camera improve small-screen use. Coarse-pointer rendering caps DPR at 1.5 with the same shaders, colors, outlines and antialiasing. The screen starts inside the clipped world container so mobile initial layout cannot expand the viewport before the first WebGL frame.
+
+Official control reference: https://threejs.org/docs/pages/OrbitControls.html. Exact prechange release: `checkpoint-before-360-v1.2.0`; deployment `3cf52e69-45b6-4d22-a81b-657d83f304ab`.

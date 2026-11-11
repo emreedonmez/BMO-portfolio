@@ -29,7 +29,22 @@ function contour(parent,name,paths,color=INK,width=1.1){const a=[];for(const pat
 function smoothShape(points){const s=new T.Shape();const last=points.at(-1),first=points[0];s.moveTo((last[0]+first[0])/2,(last[1]+first[1])/2);for(let i=0;i<points.length;i++){const p=points[i],q=points[(i+1)%points.length];s.quadraticCurveTo(p[0],p[1],(p[0]+q[0])/2,(p[1]+q[1])/2)}return s}
 function extrude(shape,depth,bevel=.05){const g=new T.ExtrudeGeometry(shape,{depth,bevelEnabled:bevel>0,bevelThickness:bevel,bevelSize:bevel,bevelSegments:3,curveSegments:24,steps:1});g.translate(0,0,-depth/2);return g}
 function rng(seed){return ()=>{seed=(seed*16807)%2147483647;return seed/2147483647}}
-function shadow(parent,name,x,z,rx,rz,opacity=.2){const m=add(parent,name,new T.CircleGeometry(1,64),new T.MeshBasicMaterial({color:'#382b48',transparent:true,opacity,depthWrite:false,toneMapped:false}),[x,.022,z],0);m.rotation.x=-Math.PI/2;m.scale.set(rx,rz,1);m.userData.shadow=true;return m}
+function shadow(parent,name,x,z,rx,rz,opacity=.2,groundY=-.055){
+ const material=new T.ShaderMaterial({uniforms:{ink:{value:new T.Color('#302039')},opacity:{value:opacity}},vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'uniform vec3 ink;uniform float opacity;varying vec2 v;void main(){float a=1.-smoothstep(.40,1.,length(v*2.-1.));gl_FragColor=vec4(ink,a*opacity);\n#include <colorspace_fragment>\n}',transparent:true,depthWrite:false,toneMapped:false});
+ const localY=(groundY-parent.position.y)/parent.scale.y+.003;
+ const m=add(parent,name,new T.PlaneGeometry(2,2),material,[x,localY,z],0);m.rotation.x=-Math.PI/2;m.scale.set(rx,rz,1);m.userData.shadow=true;return m;
+}
+function groundedLeg(parent,name,top,bottom,color,radius,groundY){
+ const localGround=(groundY-parent.position.y)/parent.scale.y,footHeight=.11;
+ const end=[bottom[0],localGround+footHeight*.75,bottom[1]],mid=[(top[0]+end[0])*.5,(top[1]+end[1])*.5,(top[2]+end[2])*.5+.06];
+ const curve=new T.CatmullRomCurve3([new T.Vector3(...top),new T.Vector3(...mid),new T.Vector3(...end)]);
+ add(parent,name+'-stem',variableTube(curve,t=>radius*(1.12-.20*t),24,12),color,[0,0,0],.023);
+ cylinder(parent,name+'-joint',radius*1.5,.14,color,top,.018);
+ const foot=add(parent,name+'-flat-foot',new T.CylinderGeometry(radius*1.12,radius*1.04,footHeight,24),color,[end[0],localGround+footHeight/2,end[2]],.016);
+ foot.userData.groundContact=true;foot.userData.groundY=groundY;
+ shadow(parent,name+'-contact',end[0],end[2],radius*2.8,radius*2.5,.36,groundY);
+ return foot;
+}
 
 // Place independent solid objects against the drawing's composition, in a shared 3D floor.
 export function roomCalibration(){
@@ -52,6 +67,19 @@ function makeTrunk(parent,name,base,radius,height,lean,seed){
  for(let j=0;j<rings;j++)for(let i=0;i<sides;i++){const a=j*(sides+1)+i,b=a+sides+1;indices.push(a,b,a+1,b,b+1,a+1)}
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setIndex(indices);geo.computeVertexNormals();
  const group=new T.Group();group.name=name;group.position.copy(base);parent.add(group);add(group,name+'-trunk',geo,cel('#6c5577','#3c3049','#92738f'),[0,0,0],radius*.018);
+ // Continue the original silhouette above the reference frame, so a wide orbit sees no cut tops.
+ if(height<140){
+  const upper=[],faces=[],start=center(1),topRadius=rad(1),upperRings=20,upperRandom=rng(seed+901);
+  const upperCenter=t=>new T.Vector3(start.x+lean*.1*t,height+(141-height)*t,start.z+Math.sin(t*4)*radius*.04);
+  const upperRadius=t=>topRadius*(1-.05*t+.012*Math.sin(t*9)*t);
+  for(let j=0;j<=upperRings;j++){const t=j/upperRings,c=upperCenter(t);for(let i=0;i<=sides;i++){const a=i/sides*Math.PI*2,r=upperRadius(t)*(1+.05*Math.sin(a*5+seed));upper.push(c.x+Math.cos(a)*r,c.y,c.z+Math.sin(a)*r*.76)}}
+  for(let j=0;j<upperRings;j++)for(let i=0;i<sides;i++){const a=j*(sides+1)+i,b=a+sides+1;faces.push(a,b,a+1,b,b+1,a+1)}
+  const continuation=new T.BufferGeometry();continuation.setAttribute('position',new T.Float32BufferAttribute(upper,3));continuation.setIndex(faces);continuation.computeVertexNormals();
+  const sourceNormal=geo.attributes.normal,normal=continuation.attributes.normal;for(let i=0;i<=sides;i++){const j=rings*(sides+1)+i;normal.setXYZ(i,sourceNormal.getX(j),sourceNormal.getY(j),sourceNormal.getZ(j))}
+  add(group,name+'-ceiling-continuation',continuation,cel('#6c5577','#3c3049','#92738f'),[0,0,0],radius*.018);
+  const grain=[];for(let i=0;i<130;i++){const a=upperRandom()*Math.PI*2,t0=upperRandom()*.98,len=.01+upperRandom()*.05,p=[];for(let k=0;k<=4;k++){const t=Math.min(1,t0+len*k/4),c=upperCenter(t),r=upperRadius(t)*(1+.05*Math.sin(a*5+seed))+.012;p.push([c.x+Math.cos(a)*r,c.y,c.z+Math.sin(a)*r*.76])}grain.push(p)}
+  contour(group,name+'-upper-bark-grain',grain,'#3c2d46',1.0);
+ }
  const paths=[];
  for(let i=0;i<105;i++){
   const a=random()*Math.PI*2,t0=random()*.97,len=.025+random()*.12,p=[];
@@ -131,8 +159,8 @@ function createWall(parent,C){
 function createCouch(parent,C){
  const g=new T.Group();g.name='purple-couch';g.position.copy(C.ground(.552,.662));g.rotation.y=C.yaw+.06;
  const width=C.width(.552,.662,.247),height=C.height(.552,.662,.43);g.scale.set(width/9,height/10,width/9);parent.add(g);
- shadow(g,'couch-shadow',0,0,5.2,2.9,.25);
- for(const x of [-3.5,3.5])for(const z of [-1.45,1.5])pipe(g,'couch-leg',[[x,1.5,z],[x*.99,.7,z+.08],[x*1.04,.06,z+.22]],.10,'#4b3245',.035);
+ shadow(g,'couch-shadow',0,0,5.2,2.9,.13);
+ for(const x of [-3.5,3.5])for(const z of [-1.45,1.5])groundedLeg(g,`couch-leg-${x}-${z}`,[x,1.5,z],[x*1.04,z+.22],'#4b3245',.145,-.055);
  const backShape=smoothShape([[-4.15,2],[-4.38,8.9],[-3.7,9.85],[-.1,9.95],[3.8,9.85],[4.25,9.1],[4.0,2]]);
  add(g,'couch-back-frame',extrude(backShape,1.0,.12),cel('#56305f','#302337','#7d447d'),[0,0,-1.65],.055);
  box(g,'couch-seat-base',8.4,1.25,4.5,'#55305f',[0,1.85,0],.4,.045);
@@ -161,8 +189,8 @@ function createLowTable(parent,C){
  const shape=smoothShape(points),topGroup=new T.Group();topGroup.position.y=3.05;topGroup.rotation.x=.17;g.add(topGroup);
  const top=add(topGroup,'burgundy-tabletop',extrude(shape,.27,.045),cel('#a14461','#632b46','#b45170'),[0,0,0],.04);top.rotation.x=-Math.PI/2;
  const edge=shape.getPoints(80).map(p=>[p.x,.155,-p.y]);contour(topGroup,'table-edge',[edge],'#38243a',1.65);
- for(const [i,x,z]of [[0,-radius*.7,-radius*.35],[1,radius*.66,-radius*.35],[2,-radius*.68,radius*.42],[3,radius*.64,radius*.46]])pipe(g,'bent-table-leg-'+i,[[x,3.0-z*.17,z],[x*.98,1.2,z+.06],[x*1.05,.05,z+.13]],.095,'#714452',.035);
- shadow(g,'table-contact-shadow',.5,.25,radius*.92,radius*.72,.32);
+ for(const [i,x,z]of [[0,-radius*.7,-radius*.35],[1,radius*.66,-radius*.35],[2,-radius*.68,radius*.42],[3,radius*.64,radius*.46]])groundedLeg(g,'table-leg-'+i,[x,3.0-z*.17,z],[x*1.05,z+.13],'#714452',.145,.025);
+ shadow(g,'table-contact-shadow',0,0,radius*.94,radius*.72,.13,.025);
  const scratches=[[[radius*.5,.166,radius*.08],[radius*.65,.166,radius*.12]],[[radius*.51,.166,radius*.19],[radius*.63,.166,radius*.22]],[[-radius*.66,.166,radius*.0],[-radius*.52,.166,radius*.04]]];contour(topGroup,'table-wear',scratches,'#643247',1.2);
  const book=new T.Group();book.position.set(-.35,.39,.05);book.rotation.y=-.24;book.scale.setScalar(.76);topGroup.add(book);
  box(book,'book-pages',2.75,.28,1.85,'#bca885',[0,0,0],.08,.025);
@@ -192,9 +220,9 @@ function createGramophone(parent,C){
  const g=new T.Group();g.name='gramophone-corner';g.position.copy(C.ground(.742,.703));g.rotation.y=C.yaw-.04;parent.add(g);
  const tableRadius=4.0;
  cylinder(g,'side-table-rim',tableRadius,.28,cel('#82445a','#492c43','#a15a6e'),[0,3.05,0],.04);
- for(const x of [-2.6,2.6])for(const z of [-1.9,1.9])pipe(g,'side-table-bowed-leg',[[x,3,z],[x*1.14,1.1,z*1.12],[x*.75,.1,z*.8]],.11,'#744554',.03);
+ for(const x of [-2.6,2.6])for(const z of [-1.9,1.9])groundedLeg(g,`side-table-leg-${x}-${z}`,[x,3,z],[x*.75,z*.8],'#744554',.15,-.055);
  const lower=add(g,'table-lower-ring',new T.TorusGeometry(3.15,.09,8,52),cel('#684052'),[0,1.08,0],.018);lower.rotation.x=Math.PI/2;lower.scale.y=.72;
- shadow(g,'gramophone-shadow',.2,.2,4.2,3.1,.25);
+ shadow(g,'gramophone-shadow',.2,.2,4.2,3.1,.13);
  const record=new T.Group();record.position.set(.8,4.10,-1.0);record.rotation.y=.14;g.add(record);
  box(record,'record-player-base',4.5,1.60,3.0,'#aa6a67',[0,0,0],.18,.045);
  const disc=add(record,'green-record',new T.CylinderGeometry(1.15,1.15,.055,48),cel('#3c675b','#2c413e','#699278'),[-.22,.84,.12],.014);
@@ -243,6 +271,48 @@ function createClock(parent,C,wall){
  return g;
 }
 
+function createSurroundings(parent,C){
+ const enclosure=new T.Group();enclosure.name='360-room-enclosure';parent.add(enclosure);
+ const origin=C.ground(.5,.505),backLeft=origin.clone().addScaledVector(C.right,-300),backRight=origin.clone().addScaledVector(C.right,300);
+ const sections=[
+  ['left-return',[-80,-80],[-80,85]],['rear-wall',[-80,85],[80,85]],['right-return',[80,85],[80,-80]],
+  ['left-rear-wing',[-80,-80],[backLeft.x,backLeft.z]],['right-rear-wing',[backRight.x,backRight.z],[80,-80]]
+ ];
+ for(const [name,a,b]of sections){
+  const g=new T.Group(),width=Math.hypot(b[0]-a[0],b[1]-a[1]);g.name=name;g.position.set((a[0]+b[0])/2,0,(a[1]+b[1])/2);g.rotation.y=Math.atan2(-(b[1]-a[1]),b[0]-a[0]);
+  const normal=new T.Vector3(0,0,1).applyAxisAngle(UP,g.rotation.y);if(normal.dot(g.position.clone().negate())<0)g.rotation.y+=Math.PI;enclosure.add(g);
+  const window=name==='rear-wall',wx=-21,wy=21,ww=12,wh=14,grain=[],random=rng(name.length*37);
+  for(let y=0;y<140;y+=7){
+   const spans=window&&y>=14&&y<28?[[-width/2,wx-ww/2],[wx+ww/2,width/2]]:[[-width/2,width/2]];
+   for(const [x0,x1]of spans){box(g,name+'-plank-'+y+'-'+x0,x1-x0,6.88,.75,cel(y%14?'#4b374f':'#513b57','#302534','#624967'),[(x0+x1)/2,y+3.5,-.4],.08,.035);
+    for(let i=0;i<14;i++){const x=x0+random()*(x1-x0),yy=y+.4+random()*6;grain.push([[x,yy,.008],[Math.min(x1,x+2+random()*5),yy+.08,.008]])}
+   }
+  }
+  contour(g,name+'-grain',grain,'#302435',1.0);
+  for(let x=-width/2+8;x<width/2;x+=30)box(g,name+'-timber-rib',1.2,140,1.5,'#735979',[x,70,.6],.18,.05);
+  if(window){
+   for(const x of [wx-ww/2-.5,wx+ww/2+.5])box(g,'rear-window-upright',.9,wh+2,1.5,'#8d5e76',[x,wy,.4],.12,.035);
+   for(const y of [wy-wh/2-.4,wy+wh/2+.4])box(g,'rear-window-crossbar',ww+2,.9,1.6,'#8d5e76',[wx,y,.4],.12,.035);
+   const sky=new T.ShaderMaterial({vertexShader:'varying vec2 v;void main(){v=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec2 v;void main(){gl_FragColor=vec4(mix(vec3(.99,.64,.43),vec3(.49,.30,.57),v.y),1.);\n#include <colorspace_fragment>\n}',toneMapped:false});
+   add(g,'rear-window-sky',new T.PlaneGeometry(ww+2,wh+2),sky,[wx,wy,-1],0);
+   add(g,'rear-window-moon',new T.CircleGeometry(2.3,40),new T.MeshBasicMaterial({color:'#f2c8b5'}),[wx+2,wy+2,-.95],0);
+  }
+ }
+ box(enclosure,'timber-ceiling',580,.8,490,cel('#49334f','#302334','#604366'),[0,140,-155],.1,.02);
+ const ceilingLines=[];for(let x=-275;x<=275;x+=12)ceilingLines.push([[x,139.58,-400],[x,139.58,90]]);contour(enclosure,'ceiling-boards',ceilingLines,'#2c2133',1.0);
+ makeTrunk(enclosure,'rear-corner-left',new T.Vector3(-60,0,72),3.8,145,2,111);
+ makeTrunk(enclosure,'rear-corner-right',new T.Vector3(60,0,72),4.3,145,-3,127);
+ const chest=new T.Group();chest.name='rear-storage-bench';chest.position.set(24,0,74);chest.rotation.y=Math.PI;enclosure.add(chest);
+ box(chest,'storage-chest',14,5.3,5.6,cel('#795264','#4e3548','#99677b'),[0,2.7,0],.5,.06);
+ box(chest,'storage-curved-lid',14.3,.85,5.9,'#986578',[0,5.65,0],.35,.04);
+ for(const x of [-4.8,4.8])box(chest,'chest-metal-strap',.55,5.5,5.75,'#554a63',[x,2.85,0],.06,.02);
+ box(chest,'chest-latch',.85,1.1,.18,'#c4a17b',[0,4.4,2.93],.08,.02);
+ shadow(chest,'chest-contact-shadow',0,0,7.8,3.4,.12);
+ const stack=new T.Group();stack.position.set(-25,0,72);enclosure.add(stack);
+ for(let i=0;i<4;i++){const book=box(stack,'rear-book-'+i,4.8,.75,3.4,['#678e83','#b78472','#b7a166','#7d6697'][i],[i%2*.35,.42+i*.78,0],.10,.025);book.rotation.y=(i%2?-.12:.12)}
+ return enclosure;
+}
+
 export function createRoom(scene){
  const root=new T.Group();root.name='fully-modelled-treehouse';scene.add(root);const C=roomCalibration();
  createFloor(root,C);const wall=createWall(root,C);
@@ -255,7 +325,7 @@ export function createRoom(scene){
   ['right-back-trunk',.708,.647,.095,.88,3,79],
   ['right-frame-trunk',.90,.788,.160,1.1,4,97]
  ]){const base=C.ground(u,v),radius=C.width(u,v,w)/2,height=C.height(u,v,h);trunks.push(makeTrunk(root,name,base,radius,height,lean,seed))}
- createCouch(root,C);createLowTable(root,C);createGramophone(root,C);createClock(root,C,wall);
+ const couch=createCouch(root,C),table=createLowTable(root,C),gramophone=createGramophone(root,C);createClock(root,C,wall);createSurroundings(root,C);
  // A small wall shelf and sculpted skull above the chair.
  const shelfCenter=C.point(.58,.045,C.ground(.58,.59)),shelf=new T.Group();shelf.position.copy(shelfCenter);shelf.rotation.y=C.yaw;root.add(shelf);
  box(shelf,'high-wall-shelf',12,.55,3.1,'#684555',[0,0,0],.15,.07);
@@ -263,6 +333,22 @@ export function createRoom(scene){
  for(const x of [-.12,.89]){const eye=add(shelf,'skull-eye',new T.CircleGeometry(.33,28),new T.MeshBasicMaterial({color:'#3a2a48'}),[x,1.55,1.37],0);eye.scale.y=1.22}
  for(let i=0;i<4;i++)box(shelf,'skull-tooth',.27,.40,.31,'#c7b5c2',[-.05+i*.29,.55,1.09],.06,.012);
  root.updateMatrixWorld(true);
- function audit(){const parts=[];root.traverse(m=>{if(!m.isMesh||m.userData.outline||!m.geometry)return;m.geometry.computeBoundingBox();const b=m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld);parts.push({name:m.name,type:m.geometry.type,vertices:m.geometry.attributes.position.count,finite:[...b.min.toArray(),...b.max.toArray()].every(Number.isFinite),size:b.getSize(new T.Vector3()).toArray()})});return {parts,full3D:true,roomImage:false}}
- return {group:root,audit,landmarks:{couch:root.getObjectByName('purple-couch'),table:root.getObjectByName('foreground-table'),gramophone:root.getObjectByName('gramophone-corner'),clock:root.getObjectByName('blue-clock')}};
+ const colliders=[...trunks.map(g=>new T.Box3().setFromObject(g)),...[couch,table,gramophone].map(g=>new T.Box3().setFromObject(g))].map(b=>b.expandByScalar(.65));
+ const obstacles=colliders.map(box=>({box,center:box.getCenter(new T.Vector3()),radius:Math.hypot(box.max.x-box.min.x,box.max.z-box.min.z)/2}));
+ function sightlineClear(position,target){const delta=position.clone().sub(target),distance=delta.length(),ray=new T.Ray(target,delta.normalize());return colliders.every(box=>{const hit=ray.intersectBox(box,new T.Vector3());return !hit||hit.distanceTo(target)>distance})}
+ // Lift over furniture gently while preserving the chosen distance and BMO's small scale.
+ function constrainCamera(position,target){
+  const orbit=new T.Spherical().setFromVector3(position.clone().sub(target)),elevation=Math.PI/2-orbit.phi;let lift=elevation;
+  for(const {box,center,radius}of obstacles){
+   const x=center.x-target.x,z=center.z-target.z,distance=Math.hypot(x,z),angle=Math.atan2(x,z),gap=Math.abs(Math.atan2(Math.sin(orbit.theta-angle),Math.cos(orbit.theta-angle)));
+   const edge=Math.asin(Math.min(1,radius/distance)),near=Math.max(.5,distance-radius),weight=(1-T.MathUtils.smoothstep(gap,edge,edge+.24))*T.MathUtils.smoothstep(orbit.radius*Math.sin(orbit.phi),near-2,near+2);
+   const needed=Math.min(Math.atan2(box.max.y-target.y+.6,near),Math.acos(T.MathUtils.clamp((near-.6)/orbit.radius,0,1)));
+   lift=Math.max(lift,elevation+Math.max(0,needed-elevation)*weight);
+  }
+  orbit.phi=Math.max(.10,Math.PI/2-lift);let out=new T.Vector3().setFromSpherical(orbit).add(target);
+  while(!sightlineClear(out,target)&&orbit.phi>.10){orbit.phi=Math.max(.10,orbit.phi-.02);out.setFromSpherical(orbit).add(target)}
+  return out;
+ }
+ function audit(){const parts=[],contacts=[];root.traverse(m=>{if(!m.isMesh||m.userData.outline||!m.geometry)return;m.geometry.computeBoundingBox();const b=m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld);parts.push({name:m.name,type:m.geometry.type,vertices:m.geometry.attributes.position.count,finite:[...b.min.toArray(),...b.max.toArray()].every(Number.isFinite),size:b.getSize(new T.Vector3()).toArray()});if(m.userData.groundContact)contacts.push({name:m.name,bottom:b.min.y,ground:m.userData.groundY,gap:b.min.y-m.userData.groundY})});return {parts,contacts,full3D:true,roomImage:false,enclosed:true}}
+ return {group:root,audit,constrainCamera,sightlineClear,cameraIsClear:position=>colliders.every(b=>!b.containsPoint(position)),landmarks:{couch:root.getObjectByName('purple-couch'),table:root.getObjectByName('foreground-table'),gramophone:root.getObjectByName('gramophone-corner'),clock:root.getObjectByName('blue-clock')}};
 }

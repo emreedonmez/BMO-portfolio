@@ -18,10 +18,10 @@ try{
  }
  assert.ok(!requests.some(u=>u.includes('treehouse-room.png')),'No room image may load');
  await page.screenshot({path:'artifacts/room-3d-desktop.png'});
- await page.mouse.move(1220,230);await page.waitForTimeout(750);
+ await page.mouse.move(1220,230);await page.mouse.down();await page.mouse.move(1170,230,{steps:10});await page.mouse.up();await page.waitForTimeout(900);
  const shifted=await page.evaluate(()=>window.portfolioDiagnostics());
  const shift=key=>Math.hypot(shifted.roomLandmarks[key].x-initial.roomLandmarks[key].x,shifted.roomLandmarks[key].y-initial.roomLandmarks[key].y);
- assert.ok(shift('couch')>.5,'Pointer movement must reveal actual room depth');
+ assert.ok(shift('couch')>.5,'Drag rotation must reveal actual room depth');
  assert.ok(Math.abs(shift('couch')-shift('table'))>.2,'Near and far objects must have different parallax');
  await page.screenshot({path:'artifacts/room-3d-parallax.png'});
  const review=await browser.newPage({viewport:{width:1440,height:810}});

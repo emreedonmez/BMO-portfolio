@@ -42,7 +42,7 @@ try{
  await review.close();
  // The real 3D room fills every responsive viewport without a backplate.
  for(const [w,h]of [[320,700],[390,844],[1024,768],[1440,810],[2560,1080]]){
-  await page.setViewportSize({width:w,height:h});d=await page.evaluate(()=>window.portfolioDiagnostics());
+  await page.setViewportSize({width:w,height:h});await page.waitForFunction(({w,h})=>{const c=document.querySelector('#world>canvas'),ratio=portfolioDiagnostics().orbit.dpr;return c.width===Math.floor(w*ratio)&&c.height===Math.floor(h*ratio)},{w,h});d=await page.evaluate(()=>window.portfolioDiagnostics());
   const canvas=await page.locator('#world > canvas').evaluate(el=>{const b=el.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height}});
   assert.equal(await page.locator('#room-art').count(),0);assert.equal(canvas.x,0);assert.equal(canvas.y,0);assert.equal(canvas.width,w);assert.equal(canvas.height,h);
   assert.ok(d.roomAudit.full3D&&!d.roomAudit.roomImage);assert.ok(d.roomCoverage.every(Boolean));assert.ok(d.roomAudit.parts.length>250);
