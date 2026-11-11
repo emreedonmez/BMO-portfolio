@@ -13,7 +13,7 @@ const roomPosition=new T.Vector3(),roomTarget=new T.Vector3(),closePosition=new 
 function views(){const ratio=innerWidth/innerHeight;const mobile=ratio<.8;
  roomPosition.set(mobile?6.7:7.7,mobile?6.5:6.6,mobile?12.9:12.6);roomTarget.set(mobile?0:-.3,mobile?1.3:1.9,0);
  // Keep both the LCD and physical controls inside the close-up on every aspect ratio.
- const distance=Math.max(5.5,3.6/(2*Math.tan(T.MathUtils.degToRad(42/2))*ratio));
+ const distance=Math.max(6.6,2.65/(2*Math.tan(T.MathUtils.degToRad(42/2))*ratio)+.76);
  closePosition.set(0,2.18,distance);closeTarget.set(0,2.18,0);
 }
 function applyVisibility(){document.body.classList.toggle('focused',focused);$('#room-return').hidden=!focused;$('.control-guide').hidden=!focused;$('.accessible-controls').hidden=!focused;$('#welcome').setAttribute('aria-hidden',String(focused));$('#enter').tabIndex=focused?-1:0;screen.setAttribute('aria-hidden',String(!focused));if(bmo)bmo.face.visible=!focused}
@@ -40,5 +40,5 @@ try{
  function animate(now){frame=requestAnimationFrame(animate);if(document.hidden)return;if(transition){const t=transition.duration?Math.min(1,(now-transition.start)/transition.duration):1;const e=t*t*(3-2*t);camera.position.lerpVectors(transition.from,transition.to,e);look.lerpVectors(transition.fromLook,transition.toLook,e);if(t===1)transition=null}if(pressed&&now>pressUntil){pressed.position.z=.785;pressed=null}camera.lookAt(look);renderer.render(scene,camera);cssRenderer.render(scene,camera)}
  frame=requestAnimationFrame(animate);document.body.classList.add('ready');applyVisibility();$('#loading').addEventListener('transitionend',()=>$('#loading').hidden=true,{once:true});
  // Expose only read-only diagnostics for automated rendering and interaction checks.
- window.portfolioDiagnostics=()=>({webgl:renderer.getContext().isContextLost()===false,view:focused?'portfolio':'room',mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles});
+ window.portfolioDiagnostics=()=>({webgl:renderer.getContext().isContextLost()===false,view:focused?'portfolio':'room',mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles,bmoCenter:(()=>{const p=new T.Vector3(0,2.4,.72).project(camera);return {x:(p.x+1)*innerWidth/2,y:(1-p.y)*innerHeight/2}})(),buttons:bmo.controls.map(m=>{const p=m.getWorldPosition(new T.Vector3()).project(camera);return {action:m.userData.action,x:(p.x+1)*innerWidth/2,y:(1-p.y)*innerHeight/2}})});
 }catch(error){fallback(error)}

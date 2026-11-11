@@ -9,7 +9,7 @@ function mesh(parent,geometry,material,position=[0,0,0],outline=0){
  if(outline){const o=new T.Mesh(geometry,ink);o.scale.setScalar(1+outline);o.castShadow=false;m.add(o)}return m;
 }
 function box(parent,w,h,d,color,position,r=.04,outline=0){return mesh(parent,new RoundedBoxGeometry(w,h,d,3,r),typeof color==='string'?mat(color):color,position,outline)}
-function tube(parent,points,r,material,outline=true){const c=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));return mesh(parent,new T.TubeGeometry(c,32,r,9,false),material,[0,0,0],outline?.12:0)}
+function tube(parent,points,r,material,outline=true){const c=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)));const m=mesh(parent,new T.TubeGeometry(c,32,r,9,false),material);if(outline){const edge=new T.Mesh(new T.TubeGeometry(c,32,r*1.12,9,false),ink);parent.add(edge)}return m}
 function cylinder(parent,r,h,material,pos,segments=40){return mesh(parent,new T.CylinderGeometry(r,r,h,segments),material,pos)}
 function texture(width,height,draw){const c=document.createElement('canvas');c.width=width;c.height=height;draw(c.getContext('2d'),width,height);const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;return t}
 function faceTexture(){return texture(640,452,(c,w,h)=>{c.fillStyle='#d9f5bf';c.fillRect(0,0,w,h);c.fillStyle='#203e2e';for(const x of [190,450]){c.beginPath();c.ellipse(x,165,14,24,0,0,Math.PI*2);c.fill();c.lineWidth=6;c.lineCap='round';c.beginPath();c.moveTo(x-24,183);c.quadraticCurveTo(x,170,x+24,183);c.strokeStyle='#203e2e';c.stroke()}c.beginPath();c.moveTo(258,240);c.bezierCurveTo(258,214,280,240,320,250);c.bezierCurveTo(354,240,381,217,382,242);c.bezierCurveTo(377,318,274,321,258,240);c.fill();c.fillStyle='#75b96b';c.beginPath();c.ellipse(320,292,34,15,0,Math.PI,Math.PI*2);c.fill()})}
@@ -37,7 +37,7 @@ export function createBMO(scene){
  box(bmo,.32,.065,.045,mat('#222a9b'),[-.93,.55,.75],.029);box(bmo,.32,.065,.045,mat('#222a9b'),[-.44,.55,.75],.029);
  // Side name and the nine speaker perforations visible on the character reference.
  const label=texture(256,640,c=>{c.fillStyle='#163637';c.font='900 170px Arial';c.textAlign='center';['B','M','O'].forEach((s,i)=>c.fillText(s,128,240+i*170))});
- const name=mesh(bmo,new T.PlaneGeometry(.87,2.18),new T.MeshBasicMaterial({map:label,transparent:true}),[-1.409,1.96,-.02]);name.rotation.y=-Math.PI/2;
+ const name=mesh(bmo,new T.PlaneGeometry(.87,2.18),new T.MeshBasicMaterial({map:label,transparent:true}),[-1.409,1.96,-.02]);name.rotation.y=-Math.PI/2;const rightName=name.clone();rightName.position.x=1.409;rightName.rotation.y=Math.PI/2;bmo.add(rightName);
  for(let row=0;row<3;row++)for(let col=0;col<3;col++){const g=new T.CircleGeometry(.031,14);const m=mesh(bmo,g,black,[-1.415,3.57-row*.19,-.3+col*.22]);m.rotation.y=-Math.PI/2}
  for(let i=0;i<5;i++)box(bmo,.43,.055,.025,black,[0,2.9-i*.17,-.763],.015);
  for(const side of [-1,1]){
