@@ -2,15 +2,18 @@ import './style.css';
 import * as T from 'three';
 import {CSS3DRenderer,CSS3DObject} from 'three/addons/renderers/CSS3DRenderer.js';
 import {createBMO} from './scene.js';
+import {createRoom} from './room.js';
 import {roomAnchor} from './bmo-layout.js';
 import {createPortfolio} from './portfolio.js';
 
-const $=s=>document.querySelector(s),screen=$('#portfolio'),art=$('#room-art');
+const $=s=>document.querySelector(s),screen=$('#portfolio');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
-let renderer,cssRenderer,scene,camera,bmo,frame=0,transition=null,focused=false;
+let renderer,cssRenderer,scene,camera,bmo,room,frame=0,transition=null,focused=false;
 let sound=false,audio,dirty=true,pressed=null,pressUntil=0,blink=false;
 const look=new T.Vector3(),offset=new T.Vector2();
 let roomPose,closePose,progress=0;
+const parallax=new T.Vector2(),parallaxTarget=new T.Vector2();
+const finePointer=matchMedia('(hover: hover) and (pointer: fine)');
 
 function cue(type){
  if(!sound)return;
@@ -27,13 +30,11 @@ function views(){
  const nearDistance=Math.max(6.6,2.55/(2*Math.tan(T.MathUtils.degToRad(21))*aspect)+.59);
  roomPose={position:new T.Vector3(-5.5,6.5,23),look:new T.Vector3(0,1.62,.28),offset:new T.Vector2(innerWidth/2-anchor.x,innerHeight/2-anchor.y)};
  closePose={position:new T.Vector3(0,1.85,nearDistance),look:new T.Vector3(0,1.85,0),offset:new T.Vector2()};
- art.style.transformOrigin=`${anchor.x}px ${anchor.y}px`;
  document.documentElement.style.setProperty('--entry-x',`${anchor.x}px`);
  document.documentElement.style.setProperty('--entry-y',`${Math.min(innerHeight-55,anchor.y+innerHeight*.135)}px`);
 }
 function applyPose(){
  camera.lookAt(look);camera.setViewOffset(innerWidth,innerHeight,offset.x,offset.y,innerWidth,innerHeight);camera.updateMatrixWorld();
- art.style.transform=`scale(${1+progress*.55})`;
 }
 function paint(){applyPose();renderer.render(scene,camera);cssRenderer.render(scene,camera);dirty=false}
 function visibility(){
@@ -49,7 +50,7 @@ function finishTransition(){
 function setView(value,instant=false){
  if(!renderer){focused=true;visibility();return}
  if(focused===value&&!instant)return;
- focused=value;visibility();cue(value?'enter':'back');if(value)portfolio.menu();
+ parallax.set(0,0);parallaxTarget.set(0,0);focused=value;visibility();cue(value?'enter':'back');if(value)portfolio.menu();
  const to=value?closePose:roomPose;
  const duration=reduce.matches||instant?0:1250;
  if(duration){
@@ -75,14 +76,14 @@ function fallback(error){
 }
 
 try{
- await Promise.all([art.decode(),document.fonts.ready]);
- scene=new T.Scene();
- camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.1,80);
+ await document.fonts.ready;
+ scene=new T.Scene();scene.background=new T.Color('#48354f');
+ camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.1,1200);
  renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.setClearColor(0,0);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NoToneMapping;
  $('#world').append(renderer.domElement);
  cssRenderer=new CSS3DRenderer();cssRenderer.setSize(innerWidth,innerHeight);cssRenderer.domElement.className='css3d-layer';$('#world').append(cssRenderer.domElement);
- bmo=createBMO(scene);
+ room=createRoom(scene);bmo=createBMO(scene);
  const lcd=new CSS3DObject(screen);lcd.position.copy(bmo.screenPosition);lcd.scale.setScalar(bmo.screenWidth/640);scene.add(lcd);
  views();camera.position.copy(roomPose.position);look.copy(roomPose.look);offset.copy(roomPose.offset);visibility();paint();
 
@@ -99,7 +100,8 @@ try{
   if(action==='dpad'){const p=obj.worldToLocal(h.point.clone());action=Math.abs(p.x)>Math.abs(p.y)?p.x>0?'right':'left':p.y>0?'up':'down'}
   portfolio.action(action);if(pressed)bmo.setPressed(pressed,false);pressed=obj;bmo.setPressed(pressed,true);pressUntil=performance.now()+125;dirty=true;
  });
- renderer.domElement.addEventListener('pointermove',e=>{renderer.domElement.style.cursor=hit(e)?'pointer':'default'});
+ renderer.domElement.addEventListener('pointermove',e=>{renderer.domElement.style.cursor=hit(e)?'pointer':'default';if(!focused&&!transition&&finePointer.matches&&!reduce.matches)parallaxTarget.set((e.clientX/innerWidth-.5)*2,(.5-e.clientY/innerHeight)*2)});
+ renderer.domElement.addEventListener('pointerleave',()=>parallaxTarget.set(0,0));
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();fallback(new Error('WebGL context lost'))});
  addEventListener('resize',()=>{
   if(!renderer)return;camera.aspect=innerWidth/innerHeight;views();renderer.setSize(innerWidth,innerHeight);cssRenderer.setSize(innerWidth,innerHeight);
@@ -111,6 +113,7 @@ try{
    camera.position.lerpVectors(transition.fromPosition,transition.to.position,e);look.lerpVectors(transition.fromLook,transition.to.look,e);offset.lerpVectors(transition.fromOffset,transition.to.offset,e);
    progress=T.MathUtils.lerp(transition.fromProgress,transition.toProgress,e);dirty=true;if(t===1)finishTransition();
   }
+  if(!focused&&!transition&&parallax.distanceTo(parallaxTarget)>.002){parallax.lerp(parallaxTarget,.13);camera.position.copy(roomPose.position).add(new T.Vector3(parallax.x*.45,parallax.y*.24,0));dirty=true}
   if(pressed&&now>=pressUntil){bmo.setPressed(pressed,false);pressed=null;dirty=true}
   const shouldBlink=!focused&&!reduce.matches&&(now%5800)>5630;
   if(shouldBlink!==blink){blink=shouldBlink;bmo.blink(blink);dirty=true}
@@ -127,7 +130,7 @@ try{
  // Read-only measurements used to verify the actual rendered model and touch targets.
  window.portfolioDiagnostics=()=>({webgl:!renderer.getContext().isContextLost(),view:focused?'portfolio':'room',transitioning:!!transition,mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles,
   screenCorners:[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,y])=>project(new T.Vector3(bmo.layout.screen.x+x*bmo.screenWidth/2,bmo.layout.screen.y+y*bmo.screenHeight/2,bmo.layout.screen.z))),
-  bmoCenter:project(new T.Vector3(0,1.8,.57)),bmoBounds:projectedBounds(),modelAudit:bmo.audit(),
+  bmoCenter:project(new T.Vector3(0,1.8,.57)),bmoBounds:projectedBounds(),modelAudit:bmo.audit(),roomAudit:room.audit(),roomLandmarks:Object.fromEntries(Object.entries(room.landmarks).map(([key,obj])=>[key,project(obj.getWorldPosition(new T.Vector3()))])),
   buttons:bmo.controls.map(m=>({id:m.name,action:m.userData.action,...project(m.getWorldPosition(new T.Vector3()))})),
   dpadTargets:Object.fromEntries([['up',0,.20],['down',0,-.20],['left',-.20,0],['right',.20,0]].map(([key,x,y])=>[key,project(new T.Vector3(x,y,.013).applyMatrix4(bmo.controls[0].matrixWorld))]))
  });

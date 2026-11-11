@@ -1,7 +1,6 @@
 @font-face{font-family:Pixel;src:url('/pixel.ttf') format('truetype');font-display:swap}
 :root{font-family:'Trebuchet MS',Arial,sans-serif;color:#e8e3ed;background:#44324e;--entry-x:50vw;--entry-y:88vh;--ink:#292133}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden}body{min-height:100svh}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px dashed #edba5b;outline-offset:5px}[hidden]{display:none!important}
-#room-art{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;pointer-events:none;user-select:none;transform-origin:53.5% 74.5%}
 #world{position:fixed;inset:0;padding:0;margin:0;overflow:hidden}#world canvas{display:block;width:100%;height:100%;touch-action:pan-y}.css3d-layer{position:absolute;inset:0;pointer-events:none}
 .utilities{position:fixed;top:max(16px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));z-index:6;display:flex;gap:10px}.utilities button{min-height:44px;border:2px solid #292133;border-radius:9px 12px 8px 10px;background:#59405dd9;color:#f1e7e8;padding:8px 12px;font-size:12px;box-shadow:2px 3px 0 #241b2c80}.utilities button span[aria-hidden]{font-size:19px;vertical-align:middle}.utilities button[aria-pressed=true]{color:#d1efc5;background:#3b4e4c}
 .skip{position:fixed;top:-100px;left:16px;z-index:20;background:#d1edbf;color:#233a2e;padding:12px}.skip:focus{top:16px}
