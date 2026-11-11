@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>3D room geometry review</title><style>html,body{margin:0;height:100%;overflow:hidden}canvas{display:block}</style></head><body><script type="module">
+import * as T from 'three';
+import {createRoom,roomCalibration} from '/src/room.js';
+import {createBMO} from '/src/scene.js';
+const params=new URLSearchParams(location.search),scene=new T.Scene();scene.background=new T.Color('#48354f');
+const C=roomCalibration(),camera=C.camera;camera.aspect=innerWidth/innerHeight;camera.position.add(new T.Vector3(Number(params.get('dx')||0),Number(params.get('dy')||0),Number(params.get('dz')||0)));camera.lookAt(0,1.62,.28);camera.setViewOffset(innerWidth,innerHeight,innerWidth/2-innerWidth*.535,innerHeight/2-innerHeight*.745,innerWidth,innerHeight);camera.updateProjectionMatrix();camera.updateMatrixWorld();
+const room=createRoom(scene);createBMO(scene);
+if(params.has('wire'))room.group.traverse(m=>{if(m.isMesh){m.material=new T.MeshBasicMaterial({wireframe:true,color:m.userData.outline?'#332440':'#b89cce'});if(m.userData.outline)m.visible=false}if(m.userData.ink)m.visible=false});
+const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NoToneMapping;document.body.append(renderer.domElement);renderer.render(scene,camera);window.roomReview=room.audit();document.body.dataset.ready='true';
+</script></body></html>

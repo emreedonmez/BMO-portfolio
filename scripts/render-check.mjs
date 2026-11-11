@@ -6,7 +6,7 @@ await mkdir('artifacts',{recursive:true});
 const browser=await chromium.launch({executablePath:'C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--no-sandbox']});
 try{
 const page=await browser.newPage({viewport:{width:1440,height:810},deviceScaleFactor:1});
-const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
 await page.goto('http://127.0.0.1:5173/');await page.waitForSelector('body.ready',{state:'attached'});await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:'artifacts/room-desktop.png'});
 assert.equal(await page.title(),"Emre's Portfolio");assert.equal((await page.evaluate(()=>window.portfolioDiagnostics())).webgl,true);
 await page.getByRole('button',{name:'Meet BMO'}).click();await page.waitForTimeout(500);

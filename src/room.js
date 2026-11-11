@@ -233,6 +233,7 @@ function createClock(parent,C,wall){
  const origin=C.point(.38,.191,C.ground(.38,.539)),g=new T.Group();g.name='blue-clock';g.position.copy(origin);g.position.addScaledVector(C.normal,3.8);g.rotation.y=C.yaw;parent.add(g);
  const r=C.width(.38,.539,.047)/2;
  parent.updateMatrixWorld(true);const clockRay=new T.Raycaster();clockRay.setFromCamera(new T.Vector2(.38*2-1,1-.191*2),C.camera);const trunk=parent.getObjectByName('middle-back-trunk-trunk');const barkHit=clockRay.intersectObject(trunk,false)[0];if(barkHit)g.position.copy(barkHit.point).addScaledVector(clockRay.ray.direction,-r*.23);
+ const edgeA=g.position.clone().addScaledVector(C.right,-r).project(C.camera),edgeB=g.position.clone().addScaledVector(C.right,r).project(C.camera);g.scale.setScalar(.047*2/(edgeB.x-edgeA.x));
  const disk=add(g,'blue-clock-case',new T.CylinderGeometry(r,r,r*.24,64),cel('#5e68c5','#343361','#8992df'),[0,0,0],r*.025);disk.rotation.x=Math.PI/2;
  const front=add(g,'clock-dial',new T.CircleGeometry(r*.79,64),new T.MeshBasicMaterial({color:'#b7a6d5'}),[0,0,r*.13],0);
  const ticks=[];for(let i=0;i<12;i++){const a=i/12*Math.PI*2;ticks.push([[Math.sin(a)*r*.63,Math.cos(a)*r*.63,r*.14],[Math.sin(a)*r*.73,Math.cos(a)*r*.73,r*.14]])}contour(g,'clock-hour-marks',ticks,'#514674',1.3);

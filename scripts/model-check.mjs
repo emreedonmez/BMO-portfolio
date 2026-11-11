@@ -30,7 +30,7 @@ try{
  const red=control('confirm');await page.mouse.click(red.x,red.y);assert.equal((await page.evaluate(()=>window.portfolioDiagnostics())).mode,'detail');assert.ok(await page.getByRole('heading',{name:'İpucum',exact:true}).isVisible());results.controls.push('red-select');
  const green=control('back');await page.mouse.click(green.x,green.y);assert.equal((await page.evaluate(()=>window.portfolioDiagnostics())).mode,'menu');results.controls.push('green-back');
  const blue=control('sound');await page.mouse.click(blue.x,blue.y);assert.equal(await page.locator('#sound').getAttribute('aria-pressed'),'true');await page.mouse.click(blue.x,blue.y);results.controls.push('blue-sound');
- await page.waitForTimeout(160);d=await page.evaluate(()=>window.portfolioDiagnostics());assert.ok(d.modelAudit.controls.every(c=>Math.abs(c.z-.580)<1e-8),'all buttons return to the same mounting plane');
+ await page.waitForFunction(()=>window.portfolioDiagnostics().modelAudit.controls.every(c=>Math.abs(c.z-.580)<1e-8),{},{timeout:5000});d=await page.evaluate(()=>window.portfolioDiagnostics());
  const triangle=control('room');await page.mouse.click(triangle.x,triangle.y);assert.equal((await page.evaluate(()=>window.portfolioDiagnostics())).view,'room');results.controls.push('triangle-room');
  // Inspect every generated part in front, side, high and low views.
  const review=await browser.newPage({viewport:{width:800,height:900}});
@@ -40,14 +40,15 @@ try{
   await review.screenshot({path:`artifacts/model-${name}.png`});
  }
  await review.close();
- // The actual supplied image covers the viewport at every responsive composition.
+ // The real 3D room fills every responsive viewport without a backplate.
  for(const [w,h]of [[320,700],[390,844],[1024,768],[1440,810],[2560,1080]]){
   await page.setViewportSize({width:w,height:h});d=await page.evaluate(()=>window.portfolioDiagnostics());
-  const bg=await page.locator('#room-art').evaluate(img=>{const b=img.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,fit:getComputedStyle(img).objectFit}});
-  assert.equal(bg.fit,'cover');assert.equal(bg.naturalWidth,735);assert.equal(bg.naturalHeight,414);assert.equal(bg.x,0);assert.equal(bg.y,0);assert.equal(bg.width,w);assert.equal(bg.height,h);
+  const canvas=await page.locator('#world > canvas').evaluate(el=>{const b=el.getBoundingClientRect();return {x:b.x,y:b.y,width:b.width,height:b.height}});
+  assert.equal(await page.locator('#room-art').count(),0);assert.equal(canvas.x,0);assert.equal(canvas.y,0);assert.equal(canvas.width,w);assert.equal(canvas.height,h);
+  assert.ok(d.roomAudit.full3D&&!d.roomAudit.roomImage);assert.ok(d.roomCoverage.every(Boolean));assert.ok(d.roomAudit.parts.length>250);
   assert.ok(d.bmoBounds.height/h<.26);assert.ok(d.bmoBounds.left>0&&d.bmoBounds.right<w);assert.ok(d.bmoBounds.top>0&&d.bmoBounds.bottom<h);
   assert.equal(await page.locator('html').evaluate(e=>e.scrollWidth<=innerWidth&&e.scrollHeight<=innerHeight),true);
-  results.viewports.push({width:w,height:h,bmoHeightRatio:d.bmoBounds.height/h,background:bg});
+  results.viewports.push({width:w,height:h,bmoHeightRatio:d.bmoBounds.height/h,roomMeshes:d.roomAudit.parts.length});
  }
  const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  await mobile.goto('http://127.0.0.1:5173/');await mobile.waitForFunction(()=>window.portfolioDiagnostics?.().webgl);

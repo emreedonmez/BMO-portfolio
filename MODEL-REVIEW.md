@@ -63,16 +63,16 @@ All button front surfaces are coplanar. Actual depth is 0.024; protrusion from t
 
 ## Composition checks
 
-| Viewport | Character height / viewport | Background |
+| Viewport | Character height / viewport | Environment |
 |---|---:|---|
-| 320 × 700 | 21.5% | Full cover, original 735 × 414 image |
-| 390 × 844 | 21.5% | Full cover, original 735 × 414 image |
-| 1024 × 768 | 21.5% | Full cover, original 735 × 414 image |
-| 1440 × 810 | 21.5% | Full cover, original 735 × 414 image |
-| 2560 × 1080 | 21.5% | Full cover, original 735 × 414 image |
+| 320 × 700 | 21.5% | Full 3D room coverage |
+| 390 × 844 | 21.5% | Full 3D room coverage |
+| 1024 × 768 | 21.5% | Full 3D room coverage |
+| 1440 × 810 | 21.5% | Full 3D room coverage |
+| 2560 × 1080 | 21.5% | Full 3D room coverage |
 
 No runtime page errors were recorded. Mobile touch, keyboard, text scrolling, confirmation cancellation, resume PDF, reduced motion and WebGL fallback checks passed.
 
-The supplied image and the image copied to the production build were verified byte-for-byte identical.
+The approved BMO model, layout and portfolio source files were verified unchanged. No room image is loaded. See ROOM-REVIEW.md for the new environment verification.
 
 These checks use an isolated headless browser. The existing user browser could not be controlled because Computer Use could not verify its current URL. No physical-phone testing was performed.
