@@ -1,20 +1,22 @@
-# Full 3D room verification
+# Full 3D room verification · v1.3.0
 
-278 mesh components checked. Major props use solid ExtrudeGeometry, BufferGeometry, CylinderGeometry and rounded volumes. No room backplate is loaded.
+504 room mesh components have finite geometry. Major props use solid ExtrudeGeometry, BufferGeometry, CylinderGeometry and rounded volumes. The complete 360° interior uses the existing cel shader and palette; no room backplate is loaded.
 
 ## Approved BMO
 
-The approved BMO geometry, face, materials, controls and portfolio source files are unchanged. Portable normalized source checksums are stored in scripts/fixtures/approved-files.json. The small character retains its approximately 21.5% opening viewport height.
+The approved geometry, face, materials, controls and portfolio sources match the normalized checksums in `scripts/fixtures/approved-files.json`. The opening character retains its small reference composition.
 
-## Rendering and depth
+## Grounding and camera
 
-Canonical render: 428 draw calls and 399784 triangles. Rendering is demand-driven; the scene does not redraw continuously when it rests.
+The chair and both tables have 12 tapered stems, upper joints and flat feet. Every foot bottom coincides with its actual floor or rug plane within 0.000001 world units. Soft local contact shadows are drawn at that same surface.
 
-Pointer parallax test: couch shifts 4.03 CSS pixels; foreground table shifts 0.61 CSS pixels under the same camera movement. This difference verifies independent world-space depths.
+Drag rotates horizontally without limits. The camera lifts over furniture while preserving requested zoom and an unobstructed line to BMO. The original view, explored return view, polar limits and near/far zoom are covered by `scripts/orbit-check.mjs`.
 
-Canonical, left, right and high camera renders were inspected. A wireframe render verifies the room construction. The 4K image is a fresh 3840 × 2160 WebGL render, not an enlarged reference image.
+## Rendering
 
-All corner camera rays hit room geometry at five responsive compositions. Eight unit tests, model controls, touch navigation, HTML-screen alignment during movement, external confirmation cancellation, PDF availability, reduced motion and WebGL fallback checks pass. No browser shader/runtime errors were recorded.
+Canonical render: 686 draw calls and 603538 triangles. Static frames remain demand-driven. Drag gives independent world-space parallax: chair about 118.73 CSS pixels, foreground table about 40.69 under the measured gesture.
+
+Canonical, left, right, high and wireframe views were captured and inspected. The 4K image is an actual 3840 × 2160 WebGL render. The BMO checks cover 52 components, seven model angles, all eight physical control actions and a readable WebGL fallback. The responsive and touch review is documented in `ORBIT-REVIEW.md`.
 
 ## Individual geometry ledger
 
@@ -138,6 +140,8 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | sunset-cloud-2-2 | SphereGeometry | 475 | Yes |
 | sunset-cloud-2-3 | SphereGeometry | 475 | Yes |
 | left-frame-trunk-trunk | BufferGeometry | 1089 | Yes |
+| left-frame-trunk-ceiling-continuation | BufferGeometry | 693 | Yes |
+| left-frame-trunk-upper-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | left-frame-trunk-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | left-frame-trunk-knot-rim-0 | TorusGeometry | 279 | Yes |
 | left-frame-trunk-knot-hole-0 | CircleGeometry | 34 | Yes |
@@ -146,6 +150,8 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | left-frame-trunk-knot-rim-2 | TorusGeometry | 279 | Yes |
 | left-frame-trunk-knot-hole-2 | CircleGeometry | 34 | Yes |
 | left-back-trunk-trunk | BufferGeometry | 1089 | Yes |
+| left-back-trunk-ceiling-continuation | BufferGeometry | 693 | Yes |
+| left-back-trunk-upper-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | left-back-trunk-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | left-back-trunk-knot-rim-0 | TorusGeometry | 279 | Yes |
 | left-back-trunk-knot-hole-0 | CircleGeometry | 34 | Yes |
@@ -154,6 +160,8 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | left-back-trunk-knot-rim-2 | TorusGeometry | 279 | Yes |
 | left-back-trunk-knot-hole-2 | CircleGeometry | 34 | Yes |
 | middle-back-trunk-trunk | BufferGeometry | 1089 | Yes |
+| middle-back-trunk-ceiling-continuation | BufferGeometry | 693 | Yes |
+| middle-back-trunk-upper-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | middle-back-trunk-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | middle-back-trunk-knot-rim-0 | TorusGeometry | 279 | Yes |
 | middle-back-trunk-knot-hole-0 | CircleGeometry | 34 | Yes |
@@ -162,6 +170,8 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | middle-back-trunk-knot-rim-2 | TorusGeometry | 279 | Yes |
 | middle-back-trunk-knot-hole-2 | CircleGeometry | 34 | Yes |
 | curved-couch-trunk-trunk | BufferGeometry | 1089 | Yes |
+| curved-couch-trunk-ceiling-continuation | BufferGeometry | 693 | Yes |
+| curved-couch-trunk-upper-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | curved-couch-trunk-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | curved-couch-trunk-knot-rim-0 | TorusGeometry | 279 | Yes |
 | curved-couch-trunk-knot-hole-0 | CircleGeometry | 34 | Yes |
@@ -170,6 +180,8 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | curved-couch-trunk-knot-rim-2 | TorusGeometry | 279 | Yes |
 | curved-couch-trunk-knot-hole-2 | CircleGeometry | 34 | Yes |
 | right-back-trunk-trunk | BufferGeometry | 1089 | Yes |
+| right-back-trunk-ceiling-continuation | BufferGeometry | 693 | Yes |
+| right-back-trunk-upper-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | right-back-trunk-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | right-back-trunk-knot-rim-0 | TorusGeometry | 279 | Yes |
 | right-back-trunk-knot-hole-0 | CircleGeometry | 34 | Yes |
@@ -178,6 +190,8 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | right-back-trunk-knot-rim-2 | TorusGeometry | 279 | Yes |
 | right-back-trunk-knot-hole-2 | CircleGeometry | 34 | Yes |
 | right-frame-trunk-trunk | BufferGeometry | 1089 | Yes |
+| right-frame-trunk-ceiling-continuation | BufferGeometry | 693 | Yes |
+| right-frame-trunk-upper-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | right-frame-trunk-bark-grain | LineSegmentsGeometry | 8 | Yes |
 | right-frame-trunk-knot-rim-0 | TorusGeometry | 279 | Yes |
 | right-frame-trunk-knot-hole-0 | CircleGeometry | 34 | Yes |
@@ -185,11 +199,23 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | right-frame-trunk-knot-hole-1 | CircleGeometry | 34 | Yes |
 | right-frame-trunk-knot-rim-2 | TorusGeometry | 279 | Yes |
 | right-frame-trunk-knot-hole-2 | CircleGeometry | 34 | Yes |
-| couch-shadow | CircleGeometry | 66 | Yes |
-| couch-leg | TubeGeometry | 275 | Yes |
-| couch-leg | TubeGeometry | 275 | Yes |
-| couch-leg | TubeGeometry | 275 | Yes |
-| couch-leg | TubeGeometry | 275 | Yes |
+| couch-shadow | PlaneGeometry | 4 | Yes |
+| couch-leg--3.5--1.45-stem | BufferGeometry | 325 | Yes |
+| couch-leg--3.5--1.45-joint | CylinderGeometry | 244 | Yes |
+| couch-leg--3.5--1.45-flat-foot | CylinderGeometry | 148 | Yes |
+| couch-leg--3.5--1.45-contact | PlaneGeometry | 4 | Yes |
+| couch-leg--3.5-1.5-stem | BufferGeometry | 325 | Yes |
+| couch-leg--3.5-1.5-joint | CylinderGeometry | 244 | Yes |
+| couch-leg--3.5-1.5-flat-foot | CylinderGeometry | 148 | Yes |
+| couch-leg--3.5-1.5-contact | PlaneGeometry | 4 | Yes |
+| couch-leg-3.5--1.45-stem | BufferGeometry | 325 | Yes |
+| couch-leg-3.5--1.45-joint | CylinderGeometry | 244 | Yes |
+| couch-leg-3.5--1.45-flat-foot | CylinderGeometry | 148 | Yes |
+| couch-leg-3.5--1.45-contact | PlaneGeometry | 4 | Yes |
+| couch-leg-3.5-1.5-stem | BufferGeometry | 325 | Yes |
+| couch-leg-3.5-1.5-joint | CylinderGeometry | 244 | Yes |
+| couch-leg-3.5-1.5-flat-foot | CylinderGeometry | 148 | Yes |
+| couch-leg-3.5-1.5-contact | PlaneGeometry | 4 | Yes |
 | couch-back-frame | ExtrudeGeometry | 8052 | Yes |
 | couch-seat-base | RoundedBoxGeometry | 2916 | Yes |
 | seat-cushion | RoundedBoxGeometry | 2916 | Yes |
@@ -222,18 +248,42 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | cup-rim | TorusGeometry | 407 | Yes |
 | cup-interior | CircleGeometry | 34 | Yes |
 | cup-handle | TorusGeometry | 341 | Yes |
-| bent-table-leg-0 | TubeGeometry | 275 | Yes |
-| bent-table-leg-1 | TubeGeometry | 275 | Yes |
-| bent-table-leg-2 | TubeGeometry | 275 | Yes |
-| bent-table-leg-3 | TubeGeometry | 275 | Yes |
-| table-contact-shadow | CircleGeometry | 66 | Yes |
+| table-leg-0-stem | BufferGeometry | 325 | Yes |
+| table-leg-0-joint | CylinderGeometry | 244 | Yes |
+| table-leg-0-flat-foot | CylinderGeometry | 148 | Yes |
+| table-leg-0-contact | PlaneGeometry | 4 | Yes |
+| table-leg-1-stem | BufferGeometry | 325 | Yes |
+| table-leg-1-joint | CylinderGeometry | 244 | Yes |
+| table-leg-1-flat-foot | CylinderGeometry | 148 | Yes |
+| table-leg-1-contact | PlaneGeometry | 4 | Yes |
+| table-leg-2-stem | BufferGeometry | 325 | Yes |
+| table-leg-2-joint | CylinderGeometry | 244 | Yes |
+| table-leg-2-flat-foot | CylinderGeometry | 148 | Yes |
+| table-leg-2-contact | PlaneGeometry | 4 | Yes |
+| table-leg-3-stem | BufferGeometry | 325 | Yes |
+| table-leg-3-joint | CylinderGeometry | 244 | Yes |
+| table-leg-3-flat-foot | CylinderGeometry | 148 | Yes |
+| table-leg-3-contact | PlaneGeometry | 4 | Yes |
+| table-contact-shadow | PlaneGeometry | 4 | Yes |
 | side-table-rim | CylinderGeometry | 244 | Yes |
-| side-table-bowed-leg | TubeGeometry | 275 | Yes |
-| side-table-bowed-leg | TubeGeometry | 275 | Yes |
-| side-table-bowed-leg | TubeGeometry | 275 | Yes |
-| side-table-bowed-leg | TubeGeometry | 275 | Yes |
+| side-table-leg--2.6--1.9-stem | BufferGeometry | 325 | Yes |
+| side-table-leg--2.6--1.9-joint | CylinderGeometry | 244 | Yes |
+| side-table-leg--2.6--1.9-flat-foot | CylinderGeometry | 148 | Yes |
+| side-table-leg--2.6--1.9-contact | PlaneGeometry | 4 | Yes |
+| side-table-leg--2.6-1.9-stem | BufferGeometry | 325 | Yes |
+| side-table-leg--2.6-1.9-joint | CylinderGeometry | 244 | Yes |
+| side-table-leg--2.6-1.9-flat-foot | CylinderGeometry | 148 | Yes |
+| side-table-leg--2.6-1.9-contact | PlaneGeometry | 4 | Yes |
+| side-table-leg-2.6--1.9-stem | BufferGeometry | 325 | Yes |
+| side-table-leg-2.6--1.9-joint | CylinderGeometry | 244 | Yes |
+| side-table-leg-2.6--1.9-flat-foot | CylinderGeometry | 148 | Yes |
+| side-table-leg-2.6--1.9-contact | PlaneGeometry | 4 | Yes |
+| side-table-leg-2.6-1.9-stem | BufferGeometry | 325 | Yes |
+| side-table-leg-2.6-1.9-joint | CylinderGeometry | 244 | Yes |
+| side-table-leg-2.6-1.9-flat-foot | CylinderGeometry | 148 | Yes |
+| side-table-leg-2.6-1.9-contact | PlaneGeometry | 4 | Yes |
 | table-lower-ring | TorusGeometry | 477 | Yes |
-| gramophone-shadow | CircleGeometry | 66 | Yes |
+| gramophone-shadow | PlaneGeometry | 4 | Yes |
 | record-player-base | RoundedBoxGeometry | 2916 | Yes |
 | green-record | CylinderGeometry | 292 | Yes |
 | vinyl-groove | TorusGeometry | 427 | Yes |
@@ -290,6 +340,184 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | clock-hour-hand | TubeGeometry | 187 | Yes |
 | clock-center | SphereGeometry | 475 | Yes |
 | clock-hanger | TorusGeometry | 225 | Yes |
+| left-return-plank-0--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-7--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-14--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-21--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-28--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-35--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-42--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-49--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-56--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-63--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-70--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-77--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-84--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-91--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-98--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-105--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-112--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-119--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-126--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-plank-133--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| left-return-grain | LineSegmentsGeometry | 8 | Yes |
+| left-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-0--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-7--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-14--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-14--15 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-21--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-21--15 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-28--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-35--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-42--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-49--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-56--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-63--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-70--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-77--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-84--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-91--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-98--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-105--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-112--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-119--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-126--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-plank-133--80 | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-grain | LineSegmentsGeometry | 8 | Yes |
+| rear-wall-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-wall-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| rear-window-upright | RoundedBoxGeometry | 2916 | Yes |
+| rear-window-upright | RoundedBoxGeometry | 2916 | Yes |
+| rear-window-crossbar | RoundedBoxGeometry | 2916 | Yes |
+| rear-window-crossbar | RoundedBoxGeometry | 2916 | Yes |
+| rear-window-sky | PlaneGeometry | 4 | Yes |
+| rear-window-moon | CircleGeometry | 42 | Yes |
+| right-return-plank-0--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-7--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-14--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-21--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-28--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-35--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-42--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-49--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-56--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-63--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-70--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-77--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-84--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-91--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-98--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-105--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-112--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-119--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-126--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-plank-133--82.5 | RoundedBoxGeometry | 2916 | Yes |
+| right-return-grain | LineSegmentsGeometry | 8 | Yes |
+| right-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-return-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-0--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-7--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-14--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-21--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-28--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-35--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-42--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-49--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-56--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-63--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-70--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-77--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-84--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-91--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-98--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-105--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-112--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-119--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-126--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-plank-133--144.62067774619695 | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-grain | LineSegmentsGeometry | 8 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| left-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-0--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-7--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-14--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-21--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-28--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-35--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-42--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-49--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-56--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-63--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-70--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-77--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-84--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-91--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-98--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-105--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-112--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-119--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-126--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-plank-133--138.23620314924565 | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-grain | LineSegmentsGeometry | 8 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| right-rear-wing-timber-rib | RoundedBoxGeometry | 2916 | Yes |
+| timber-ceiling | RoundedBoxGeometry | 2916 | Yes |
+| ceiling-boards | LineSegmentsGeometry | 8 | Yes |
+| rear-corner-left-trunk | BufferGeometry | 1089 | Yes |
+| rear-corner-left-bark-grain | LineSegmentsGeometry | 8 | Yes |
+| rear-corner-left-knot-rim-0 | TorusGeometry | 279 | Yes |
+| rear-corner-left-knot-hole-0 | CircleGeometry | 34 | Yes |
+| rear-corner-left-knot-rim-1 | TorusGeometry | 279 | Yes |
+| rear-corner-left-knot-hole-1 | CircleGeometry | 34 | Yes |
+| rear-corner-left-knot-rim-2 | TorusGeometry | 279 | Yes |
+| rear-corner-left-knot-hole-2 | CircleGeometry | 34 | Yes |
+| rear-corner-right-trunk | BufferGeometry | 1089 | Yes |
+| rear-corner-right-bark-grain | LineSegmentsGeometry | 8 | Yes |
+| rear-corner-right-knot-rim-0 | TorusGeometry | 279 | Yes |
+| rear-corner-right-knot-hole-0 | CircleGeometry | 34 | Yes |
+| rear-corner-right-knot-rim-1 | TorusGeometry | 279 | Yes |
+| rear-corner-right-knot-hole-1 | CircleGeometry | 34 | Yes |
+| rear-corner-right-knot-rim-2 | TorusGeometry | 279 | Yes |
+| rear-corner-right-knot-hole-2 | CircleGeometry | 34 | Yes |
+| storage-chest | RoundedBoxGeometry | 2916 | Yes |
+| storage-curved-lid | RoundedBoxGeometry | 2916 | Yes |
+| chest-metal-strap | RoundedBoxGeometry | 2916 | Yes |
+| chest-metal-strap | RoundedBoxGeometry | 2916 | Yes |
+| chest-latch | RoundedBoxGeometry | 2916 | Yes |
+| chest-contact-shadow | PlaneGeometry | 4 | Yes |
+| rear-book-0 | RoundedBoxGeometry | 2916 | Yes |
+| rear-book-1 | RoundedBoxGeometry | 2916 | Yes |
+| rear-book-2 | RoundedBoxGeometry | 2916 | Yes |
+| rear-book-3 | RoundedBoxGeometry | 2916 | Yes |
 | high-wall-shelf | RoundedBoxGeometry | 2916 | Yes |
 | shelf-skull | SphereGeometry | 475 | Yes |
 | skull-eye | CircleGeometry | 30 | Yes |
@@ -298,5 +526,3 @@ All corner camera rays hit room geometry at five responsive compositions. Eight 
 | skull-tooth | RoundedBoxGeometry | 2916 | Yes |
 | skull-tooth | RoundedBoxGeometry | 2916 | Yes |
 | skull-tooth | RoundedBoxGeometry | 2916 | Yes |
-
-Hardware frame rate and physical-phone testing have not been measured. Browser QA runs in an isolated Chromium test profile.

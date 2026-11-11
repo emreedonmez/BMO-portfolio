@@ -26,13 +26,18 @@ Başka bir statik host için yalnızca `dist` içeriğini web köküne yükleyin
 
 ## Kontroller
 
+- Odada basılı tutup sürükleme: yatayda sınırsız 360° dönüş, yukarı/aşağı bakış. Tek parmakla da çalışır.
+- Fare tekerleği / iki parmakla açma-kapama: yakınlaşma ve uzaklaşma.
+- Odada klavye okları: açıyı değiştir; Home / “Home view”: ilk görünümü geri getir.
 - BMO'ya veya “Meet BMO” düğmesine tıklama: ekrana yaklaş.
-- Sarı yön tuşu / klavye okları: seçimi değiştir veya metni kaydır.
+- Portfolyo açıkken sarı yön tuşu / klavye okları: seçimi değiştir veya metni kaydır.
 - Kırmızı yuvarlak / Enter: seç.
 - Yeşil yuvarlak / Escape: geri.
 - Mavi üçgen / “Room”: odaya dön.
 - Küçük mavi tuş / Sound: sesi aç veya kapat.
 - Ekran menüsü fare ve dokunmayla da çalışır. Mobilde ek kontrol düğmeleri bulunur.
+- “Room” ile dönünce gezdiğiniz açı ve yakınlık korunur. Kamera mobilyaların üzerinden geçerek seçilen uzaklığı korur.
+- Portfolyo içindeki metinler parmakla kaydırılır; oda sürüklemesi bu sırada devre dışıdır. Yatay telefonda ekran odaklı yakınlaşma kullanılır.
 - Hareket azaltma tercihi açıkken kamera geçişi anında gerçekleşir.
 - WebGL desteklenmezse metin portfolyosu açılır.
 
@@ -47,6 +52,8 @@ Başka bir statik host için yalnızca `dist` içeriğini web köküne yükleyin
 `references/treehouse-room.png`: yalnızca tasarım referansı; üretim klasörüne kopyalanmaz ve site tarafından yüklenmez.
 
 `src/main.js`: kamera, raycast tuşlar, ses ve CSS3D ekran.
+
+`src/navigation.js`: ekran boyutuna uygun yakın kamera ve BMO'nun içinden geçmeyen küresel kamera yolu.
 
 `src/content.js` / `src/portfolio.js`: gerçek içerik ve menü yönetimi.
 
@@ -66,19 +73,24 @@ npm run build
 node scripts/render-check.mjs
 node scripts/model-check.mjs
 node scripts/room-check.mjs
+node scripts/orbit-check.mjs
 ```
 
 Render kontrolleri Windows üzerinde Brave'in standart kurulum yolundaki izole bir headless test profiliyle çalışır; kullanıcının açık tarayıcısına bağlanmaz. Farklı bilgisayarda scriptlerdeki `executablePath` değerini kendi Chromium tarayıcınıza göre ayarlayın. `artifacts/` yerel test çıktılarıdır ve Git'e yüklenmez.
 
+Telefon, tablet, yatay ekran, masaüstü ve geniş ekran boyutları; gerçek pointer/touch olaylarıyla sürükleme, pinch, iptal ve metin kaydırma kontrol edilir. Bunlar tarayıcı emülasyonudur; fiziksel telefonun kare hızı, Safari adres çubuğu ve donanım dokunma hissi ölçülmemiştir.
+
 ## Eski sürüme dönüş
 
-Bu tam 3D odadan önceki, onaylı BMO ve resimli arka plan sürümü: `c3af8809-db94-4fab-96bc-3732d47aebbc`.
+360° gezintiden hemen önce beğenilen tam 3D oda: Cloudflare `3cf52e69-45b6-4d22-a81b-657d83f304ab`, Git etiketi `checkpoint-before-360-v1.2.0`, kaynak commit `0e0b8b61038498fae5a6c8aa7a56560dd9a645ee`.
 
 ```sh
-npx wrangler rollback c3af8809-db94-4fab-96bc-3732d47aebbc
+npx wrangler rollback 3cf52e69-45b6-4d22-a81b-657d83f304ab
 ```
 
-Cloudflare sürüm saklama süresine bağlıdır. Kalıcı kaynak yedeği `legacy/` ve masaüstündeki `Portfolio-Backups/Portfolio-before-BMO-2026-11-11.zip` içindedir. Eski siteyi bağımsız statik yayınlamak için `legacy/` içeriğini kullanın.
+Windows'ta aynı işlem için `RESTORE_BEFORE_360.cmd` hazırdır. Cloudflare sürüm saklama süresine bağlıdır. Kalıcı tam yedek: masaüstünde `Portfolio-Backups/BMO-before-360-v1.2.0-2026-11-11.zip`. Bu ZIP'i ayrı klasöre açıp `DEPLOY_WINDOWS.cmd` çalıştırarak da önceki tam sürümü tekrar yayınlayabilirsiniz.
+
+Daha eski, resimli oda sürümü `v1.1.0-cartoon` etiketinde; ilk retro konsol sitesi `legacy/` ve `Portfolio-Backups/Portfolio-before-BMO-2026-11-11.zip` içinde korunur.
 
 ## Kaynaklar ve lisanslar
 
