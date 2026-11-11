@@ -1,16 +1,16 @@
 # BMO Portfolio
 
-An interactive 3D portfolio set inside a cartoon treehouse. Meet BMO, explore the room, and use the characterâ€™s controls to browse Emre DÃ¶nmezâ€™s projects, background, rÃ©sumÃ©, and contact information.
+An interactive 3D portfolio set inside a cartoon treehouse. Meet BMO, explore the room, and use the character's controls to browse Emre Donmez's projects, background, resume, and contact information.
 
-**[Explore the live portfolio â†’](https://emreedonmez.com)**
+**[Explore the live portfolio](https://emreedonmez.com)**
 
-![The portfolioâ€™s fully modelled treehouse room with BMO seated in the foreground](docs/images/room.png)
+![The portfolio's fully modelled treehouse room with BMO seated in the foreground](docs/images/room.png)
 
 ## Overview
 
 The room and BMO share a real Three.js scene. Furniture, tree trunks, recessed cavities, windows, and small props are modelled individually. Painted surface textures and cel shading preserve the illustrated appearance while the camera moves through the scene.
 
-The portfolio interface is rendered on BMOâ€™s display with CSS3DRenderer, keeping readable HTML content aligned with the 3D model. All runtime assets are bundled locally; the application does not require an external model service or asset CDN.
+The portfolio interface is rendered on BMO's display with CSS3DRenderer, keeping readable HTML content aligned with the 3D model. All runtime assets are bundled locally; the application does not require an external model service or asset CDN.
 
 ### Features
 
@@ -26,7 +26,7 @@ The portfolio interface is rendered on BMOâ€™s display with CSS3DRenderer, 
 
 | Gramophone and room props | Recessed tree detail |
 | --- | --- |
-| ![Individually modelled gramophone, frames, radio, and headphones](docs/images/gramophone.png) | ![A recessed cavity following the tree trunkâ€™s curved surface](docs/images/tree-detail.png) |
+| ![Individually modelled gramophone, frames, radio, and headphones](docs/images/gramophone.png) | ![A recessed cavity following the tree trunk's curved surface](docs/images/tree-detail.png) |
 
 <details>
 <summary>Mobile room view</summary>
@@ -69,7 +69,7 @@ npm run preview
 
 Vite writes the production output to `dist/`. To publish elsewhere, upload the **contents of `dist/`** to the web root of a static host, or configure a hosting service to run `npm ci && npm run build` and publish `dist`.
 
-The project currently uses root-relative asset URLs. Serve it at a domain root or configure Viteâ€™s base path and the applicationâ€™s asset URLs before deploying under a subdirectory.
+The project currently uses root-relative asset URLs. Serve it at a domain root or configure Vite's base path and the application's asset URLs before deploying under a subdirectory.
 
 ## Controls
 
@@ -102,14 +102,14 @@ src/
   content.js         Portfolio sections, copy, and external links
   portfolio.js       Screen rendering and navigation state
   style.css          Screen interface and responsive styling
-public/              Runtime font, rÃ©sumÃ©, favicon, and dependency notices
+public/              Runtime font, resume, favicon, and dependency notices
 docs/images/         Project screenshots used in this README
 references/          Design reference; excluded from the production build
 scripts/             Browser checks and geometry inspection fixtures
 tests/               Unit and configuration tests
 ```
 
-To adapt the portfolio, start with `src/content.js` and replace `public/ozgecmis.pdf` with your own rÃ©sumÃ©. Review the page title, metadata, and profile links before publishing your own copy. Rendering and interaction code can remain separate from content changes.
+To adapt the portfolio, start with `src/content.js` and replace `public/ozgecmis.pdf` with your own resume. Review the page title, metadata, and profile links before publishing your own copy. Rendering and interaction code can remain separate from content changes.
 
 ## Development checks
 
@@ -139,6 +139,6 @@ Touch and viewport checks use browser emulation. They do not replace testing on 
 
 ## Attribution and reuse
 
-BMO is a character from *Adventure Time*. This is a personal portfolio project and is not affiliated with or endorsed by Cartoon Network or the characterâ€™s rights holders. Character and reference artwork rights remain with their respective owners.
+BMO is a character from *Adventure Time*. This is a personal portfolio project and is not affiliated with or endorsed by Cartoon Network or the character's rights holders. It does not pursue any profit motive. Character and reference artwork rights remain with their respective owners.
 
 Third-party notices for Three.js and the bundled font are retained in `public/`.
