@@ -1,33 +1,43 @@
-# Release · 11 November 2026
+# Cartoon scene release · 11 November 2026
 
 Production: https://emreedonmez.com and https://www.emreedonmez.com
 
 Worker: `emreedonmez`
 
-Published Cloudflare version: `00b1e0f9-fd05-4fab-a09d-44802074a923`.
+Published Cloudflare version: `c3af8809-db94-4fab-96bc-3732d47aebbc`.
 
-Previous Cloudflare version: `b5e648f8-dd3e-4172-bb04-5150a8062b48`.
+Previous BMO diorama version: `00b1e0f9-fd05-4fab-a09d-44802074a923`.
 
-Repository: https://github.com/emreedonmez/emreedonmez-portfolio (public).
+Original retro console version: `b5e648f8-dd3e-4172-bb04-5150a8062b48`.
+
+Public repository: https://github.com/emreedonmez/emreedonmez-portfolio
+
+## What changed
+
+The client's exact supplied treehouse image fills the browser without surrounding blank space. The diorama, oversized BMO and unrelated page decorations have been replaced. The small seated BMO uses toon shading, thin outlines, real 3D limbs and shallow aligned controls. Existing portfolio content and both domains are retained.
+
+`public/treehouse-room.png` and `dist/treehouse-room.png` were verified byte-for-byte identical to the supplied file. SHA-256: `c257d42b005cef221dbb2a38c082998c0c9e6e73a302a85db61f779127195d04`.
 
 ## Verification
 
-- JavaScript syntax checks passed.
-- Three content/configuration tests passed.
-- Production Vite build and Wrangler dry run passed.
-- Isolated Chromium rendering: 1440×1000 and 390×844.
-- Room-to-screen camera transition and return passed.
-- 3D raycast on yellow cross, red select, green back and blue room button passed.
-- About scroll, LinkedIn confirmation cancellation, resume PDF availability passed.
-- 320px narrow viewport, reduced motion and WebGL-unavailable fallback passed.
-- No application page errors in the render/navigation run.
-- Wrangler reported successful upload and deployment on both custom domains.
-- Cloudflare API confirms the new active version and both domain bindings.
+- JavaScript syntax, 6 content/geometry/configuration tests, Vite production build and Wrangler dry run passed.
+- All 52 named model components have finite geometry. Their individual measurements are documented in `MODEL-REVIEW.md`.
+- Seven rendered model angles were inspected: front, left, right, high, low and both steep sides.
+- All four physical cross directions, red select, green back, blue sound and triangle room return passed raycast tests.
+- Actual button depth is 0.024; protrusion is 0.022. Front planes are aligned; pressed controls return to the shared mount.
+- The HTML display matches the projected 3D display during camera movement to within 1 CSS pixel.
+- 320×700, 390×844, 1024×768, 1440×810 and 2560×1080 compositions have full background coverage and no opening-character clipping or page overflow.
+- Opening BMO height is approximately 21.5% of viewport height at each composition.
+- Mobile touch, keyboard, About scrolling, external confirmation cancellation, PDF availability, reduced motion and WebGL fallback passed.
+- No application runtime errors were recorded in the navigation/render run.
+- Wrangler reported successful deployment on both existing custom domains.
 
-Screenshots are local test artifacts in `artifacts/`; they are excluded from Git and the production asset directory. Physical phone testing and controlling the user's existing browser were not performed. The Computer Use safety layer stopped that browser interaction because it could not reliably determine the current URL. The automated tests ran in a separate local headless profile, not the existing browser session.
+Tests used an isolated headless Chromium profile. The Computer Use safety layer stopped access to the user's existing browser because it could not reliably determine that browser's current URL. Physical-phone testing was not performed.
 
-## Transfer
+## Backups and transfer
 
-`BMO-Portfolio-Wrangler.zip` contains all editable source, dependency lock file, Wrangler config, licenses, the unmodified provided PDF, the old site under `legacy/`, and ready-built `dist/`.
+Before this redesign: `Portfolio-Backups/BMO-before-cartoon-scene-2026-11-11.zip` and Git tag `v1.0.0-bmo`.
 
-Use `START_WINDOWS.cmd` to preview. Use `DEPLOY_WINDOWS.cmd` to install locked dependencies, build and deploy to the configured Worker. If Cloudflare login has expired, run `npx wrangler login` first. No credentials are included.
+`BMO-Portfolio-Wrangler.zip` includes complete editable source, locked dependencies, Wrangler configuration, supplied artwork, original PDF, licenses and ready-built `dist/`. Secrets, node_modules, local browser profiles and runtime state are excluded.
+
+`START_WINDOWS.cmd` starts the local preview. `DEPLOY_WINDOWS.cmd` installs locked dependencies, builds and deploys. If Cloudflare authentication has expired, run `npx wrangler login` first.
