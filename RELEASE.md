@@ -1,43 +1,45 @@
-# Cartoon scene release · 11 November 2026
+# Full 3D room release · 11 November 2026
 
 Production: https://emreedonmez.com and https://www.emreedonmez.com
 
 Worker: `emreedonmez`
 
-Published Cloudflare version: `c3af8809-db94-4fab-96bc-3732d47aebbc`.
+Published Cloudflare version: `3cf52e69-45b6-4d22-a81b-657d83f304ab`.
 
-Previous BMO diorama version: `00b1e0f9-fd05-4fab-a09d-44802074a923`.
-
-Original retro console version: `b5e648f8-dd3e-4172-bb04-5150a8062b48`.
+Previous approved BMO / image-background version: `c3af8809-db94-4fab-96bc-3732d47aebbc`, Git tag `v1.1.0-cartoon`.
 
 Public repository: https://github.com/emreedonmez/emreedonmez-portfolio
 
-## What changed
+## Change
 
-The client's exact supplied treehouse image fills the browser without surrounding blank space. The diorama, oversized BMO and unrelated page decorations have been replaced. The small seated BMO uses toon shading, thin outlines, real 3D limbs and shallow aligned controls. Existing portfolio content and both domains are retained.
+The entire treehouse is now actual Three.js geometry. The drawing remains a composition reference only and is not loaded or shipped as a production background. The approved BMO model, layout, materials, face and portfolio files are unchanged.
 
-`public/treehouse-room.png` and `dist/treehouse-room.png` were verified byte-for-byte identical to the supplied file. SHA-256: `c257d42b005cef221dbb2a38c082998c0c9e6e73a302a85db61f779127195d04`.
+The room has 278 mesh components: timber, trunks and knots, floor and rug, a curved upholstered chair, clock, opening window, sunset geometry, foreground table, layered book, open cup, gramophone horn and player, radio, headphones, album frames and shelf objects. A custom cel shader, geometry contours and vector wood strokes keep the cartoon style sharp at large resolutions.
+
+Camera approach occurs through the same 3D environment. Subtle fine-pointer camera displacement reveals different near/far parallax. Rendering remains demand-driven.
 
 ## Verification
 
-- JavaScript syntax, 6 content/geometry/configuration tests, Vite production build and Wrangler dry run passed.
-- All 52 named model components have finite geometry. Their individual measurements are documented in `MODEL-REVIEW.md`.
-- Seven rendered model angles were inspected: front, left, right, high, low and both steep sides.
-- All four physical cross directions, red select, green back, blue sound and triangle room return passed raycast tests.
-- Actual button depth is 0.024; protrusion is 0.022. Front planes are aligned; pressed controls return to the shared mount.
-- The HTML display matches the projected 3D display during camera movement to within 1 CSS pixel.
-- 320×700, 390×844, 1024×768, 1440×810 and 2560×1080 compositions have full background coverage and no opening-character clipping or page overflow.
-- Opening BMO height is approximately 21.5% of viewport height at each composition.
-- Mobile touch, keyboard, About scrolling, external confirmation cancellation, PDF availability, reduced motion and WebGL fallback passed.
-- No application runtime errors were recorded in the navigation/render run.
-- Wrangler reported successful deployment on both existing custom domains.
+- Eight unit/configuration/layout tests, JavaScript syntax and production build passed.
+- All 278 room mesh components have finite geometry. Major furniture and gramophone parts have genuine volume.
+- All four viewport corner rays hit room geometry at five responsive compositions.
+- Canonical, left, right, high and wireframe room renders were inspected.
+- A new 3840 × 2160 WebGL render was captured successfully.
+- Near/far parallax was measured independently: couch approximately 4.03 CSS pixels, foreground table approximately 0.61 under the same camera displacement.
+- The four approved BMO/portfolio source files match the prior approved source checksums.
+- Existing model tests passed: 52 BMO components, seven angles, eight physical control actions, five viewports, mobile touch, reduced motion and WebGL fallback.
+- HTML display alignment during camera travel, navigation, external confirmation cancellation and resume PDF checks passed.
+- No application or shader errors were recorded in the render test.
+- Wrangler reported a successful deployment on both existing custom domains.
 
-Tests used an isolated headless Chromium profile. The Computer Use safety layer stopped access to the user's existing browser because it could not reliably determine that browser's current URL. Physical-phone testing was not performed.
+Details: `ROOM-REVIEW.md`, `MODEL-REVIEW.md` and `scripts/fixtures/approved-files.json`.
 
-## Backups and transfer
+The tests use an isolated headless Chromium profile. Physical-phone frame rate and hardware performance were not measured.
 
-Before this redesign: `Portfolio-Backups/BMO-before-cartoon-scene-2026-11-11.zip` and Git tag `v1.0.0-bmo`.
+## Backup and transfer
 
-`BMO-Portfolio-Wrangler.zip` includes complete editable source, locked dependencies, Wrangler configuration, supplied artwork, original PDF, licenses and ready-built `dist/`. Secrets, node_modules, local browser profiles and runtime state are excluded.
+Prior complete source: `Portfolio-Backups/BMO-before-full-3D-room-2026-11-11.zip`.
 
-`START_WINDOWS.cmd` starts the local preview. `DEPLOY_WINDOWS.cmd` installs locked dependencies, builds and deploys. If Cloudflare authentication has expired, run `npx wrangler login` first.
+`BMO-Portfolio-Wrangler.zip` contains the editable project, locked dependencies, Wrangler configuration, tests, licenses, original PDF and ready-built `dist/`. The room reference is included under `references/` for source work only. Credentials, node_modules, local browser profiles and runtime state are excluded.
+
+Use `START_WINDOWS.cmd` for local development and `DEPLOY_WINDOWS.cmd` to build and publish. If authentication has expired, run `npx wrangler login` first.
