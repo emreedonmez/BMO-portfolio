@@ -1,17 +1,16 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9ddc7"><meta name="description" content="Emre Dönmez — developer. Explore my projects, experience and code in BMO's interactive room."><meta property="og:title" content="Emre's Portfolio"><meta property="og:description" content="Code, projects and a little adventure. Visit Emre's interactive 3D portfolio."><title>Emre's Portfolio</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#44324e"><meta name="description" content="Emre Dönmez's portfolio. Meet BMO in the Adventure Time treehouse and explore my projects, skills and experience."><meta property="og:title" content="Emre's Portfolio"><meta property="og:description" content="Explore Emre's portfolio with BMO."><link rel="preload" href="/treehouse-room.png" as="image"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><title>Emre's Portfolio</title></head>
 <body>
+<img id="room-art" src="/treehouse-room.png" alt="" aria-hidden="true" fetchpriority="high">
 <a class="skip" href="#portfolio">Skip to portfolio</a>
-<div id="world" aria-label="BMO sitting in a warm wooden room"></div>
-<header class="identity"><a href="/" aria-label="Emre's Portfolio home"><span class="identity-mark">e.</span><span>EMRE DÖNMEZ<small>DEVELOPER & CREATOR</small></span></a></header>
-<div class="utilities"><button id="sound" aria-pressed="false" aria-label="Enable sound"><span aria-hidden="true">♫</span> SOUND OFF</button><button id="room-return" hidden>↖ THE ROOM</button></div>
-<div id="loading" role="status"><span class="loading-face">•‿•</span><span>Opening the room<span class="loading-dots">…</span></span></div>
-<div class="welcome" id="welcome"><p class="welcome-label">MAKE YOURSELF AT HOME</p><h1>Hey, I'm Emre.</h1><p>Developer by day. Curious about everything.</p><button id="enter">Say hello to BMO <span>↗</span></button><span class="welcome-hint">CLICK BMO TO EXPLORE MY PORTFOLIO</span></div>
-<div class="room-caption"><span class="live-dot"></span> A LITTLE CORNER OF MY WORLD</div>
-<div id="portfolio" role="region" aria-label="Emre's portfolio" tabindex="-1"></div>
+<main id="world" aria-label="BMO sitting on the floor of the Adventure Time treehouse"></main>
+<div class="utilities"><button id="room-return" hidden aria-label="Return to the room">↖ Room</button><button id="sound" aria-pressed="false" aria-label="Enable sound"><span aria-hidden="true">♫</span><span class="sound-label"> Sound off</span></button></div>
+<div id="loading" role="status">Opening the room…</div>
+<div id="welcome"><button id="enter">Meet BMO <span aria-hidden="true">›</span></button></div>
+<section id="portfolio" aria-label="Emre's portfolio" tabindex="-1"></section>
 <div class="control-guide" hidden><span><kbd>↑</kbd><kbd>↓</kbd> Browse</span><span><kbd>↵</kbd> Select</span><span><kbd>esc</kbd> Back</span></div>
-<nav class="accessible-controls" aria-label="BMO controls" hidden><button data-control="up" aria-label="Up">↑</button><button data-control="down" aria-label="Down">↓</button><button data-control="confirm" aria-label="Select">● SELECT</button><button data-control="back" aria-label="Back">○ BACK</button></nav>
-<div id="fallback" hidden><h1>Hey, I'm Emre.</h1><p>Developer working with Flutter, C, C# and Python.</p><p>Your browser could not start the 3D room. My portfolio is still available below.</p><div id="fallback-content"></div></div>
-<footer class="room-footer"><a href="mailto:mail@emreedonmez.com">LET'S TALK <span>↗</span></a><span>EMRE'S PORTFOLIO · 2026</span></footer>
+<nav class="accessible-controls" aria-label="BMO controls" hidden><button data-control="up" aria-label="Up">↑</button><button data-control="down" aria-label="Down">↓</button><button data-control="confirm" aria-label="Select">Select</button><button data-control="back" aria-label="Back">Back</button></nav>
+<div id="fallback" hidden><h1>Hey, I'm Emre.</h1><p>The 3D character could not start in this browser. You can still explore my portfolio here.</p><div id="fallback-content"></div></div>
+<noscript><div class="no-script">Emre Dönmez · Developer<br><a href="/ozgecmis.pdf">Read my resume</a> · <a href="mailto:mail@emreedonmez.com">Contact me</a></div></noscript>
 <script type="module" src="/src/main.js"></script>
 </body></html>
