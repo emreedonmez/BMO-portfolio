@@ -7,6 +7,7 @@ import {createRoom} from './room.js';
 import {roomAnchor} from './bmo-layout.js';
 import {createPortfolio} from './portfolio.js';
 import {interpolatePose,portfolioPose} from './navigation.js';
+import {ROOM} from './room-geometry.js';
 
 const $=s=>document.querySelector(s),screen=$('#portfolio');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
@@ -53,7 +54,7 @@ function stopOrbit(){
 function finishTransition(focus=true){
  const destination=transition?.to;
  transition=null;document.body.classList.remove('transitioning');screen.inert=false;
- if(controls){controls.enabled=!focused;if(!focused){if(destination)orbitCamera.position.copy(destination.position);controls.target.copy(look);controls.update();camera.position.copy(room.constrainCamera(orbitCamera.position,look))}}
+ if(controls){controls.enabled=!focused;if(!focused){if(destination)orbitCamera.position.copy(destination.position);controls.target.copy(look);controls.update();camera.position.copy(orbitCamera.position)}}
  if(focus){if(focused)screen.focus({preventScroll:true});else $('#enter').focus({preventScroll:true})}
 }
 function setView(value,instant=false){
@@ -83,7 +84,7 @@ document.addEventListener('keydown',e=>{
    e.preventDefault();stopOrbit();const orbit=new T.Spherical().setFromVector3(orbitCamera.position.clone().sub(controls.target));
    if(key==='left'||key==='right')orbit.theta+=(key==='left'?1:-1)*Math.PI/12;
    else orbit.phi=T.MathUtils.clamp(orbit.phi+(key==='up'?-1:1)*Math.PI/36,controls.minPolarAngle,controls.maxPolarAngle);
-   orbitCamera.position.setFromSpherical(orbit).add(controls.target);controls.update();look.copy(controls.target);camera.position.copy(room.constrainCamera(orbitCamera.position,look));dirty=true;
+   orbitCamera.position.setFromSpherical(orbit).add(controls.target);orbitCamera.position.copy(room.constrainCamera(orbitCamera.position,camera.position,controls.target));controls.update();look.copy(controls.target);camera.position.copy(orbitCamera.position);dirty=true;
   }else if(e.key==='Enter'&&(e.target===document.body||e.target===renderer.domElement)){e.preventDefault();setView(true)}return;
  }
  if(key==='home')return;
@@ -99,17 +100,18 @@ function fallback(error){
 try{
  await document.fonts.ready;
  scene=new T.Scene();scene.background=new T.Color('#48354f');
- camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.1,1200);
+ camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.2,160);
  renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
  renderer.setPixelRatio(Math.min(devicePixelRatio,coarsePointer.matches?1.5:2));renderer.setSize(innerWidth,innerHeight,false);renderer.setClearColor(0,0);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NoToneMapping;
  $('#world').append(renderer.domElement);
  cssRenderer=new CSS3DRenderer();cssRenderer.setSize(innerWidth,innerHeight);cssRenderer.domElement.className='css3d-layer';$('#world').append(cssRenderer.domElement);
  room=createRoom(scene);bmo=createBMO(scene);
+ const contact=bmo.group.getObjectByName('floor-contact-shadow');contact.position.y=ROOM.floor+.012;contact.renderOrder=10;contact.material.polygonOffset=true;contact.material.polygonOffsetFactor=-1;contact.material.polygonOffsetUnits=-1;
  const lcd=new CSS3DObject(screen);lcd.position.copy(bmo.screenPosition);lcd.scale.setScalar(bmo.screenWidth/640);scene.add(lcd);
  views();applyDestination(roomPose);
- // Requested orbit and collision avoidance are separate, so furniture cannot change the chosen zoom.
- orbitCamera=camera.clone();controls=new OrbitControls(orbitCamera,renderer.domElement);controls.target.copy(look);controls.enablePan=false;controls.enableDamping=!reduce.matches;controls.dampingFactor=.12;controls.rotateSpeed=.6;
- controls.minDistance=4.6;controls.maxDistance=48;controls.minPolarAngle=T.MathUtils.degToRad(25);controls.maxPolarAngle=T.MathUtils.degToRad(86);
+ // Only the actual camera path can meet a solid; occlusion never changes the viewing angle.
+ orbitCamera=camera.clone();controls=new OrbitControls(orbitCamera,renderer.domElement);controls.target.copy(look);controls.enablePan=false;controls.enableDamping=!reduce.matches;controls.dampingFactor=.12;controls.rotateSpeed=.45;
+ controls.minDistance=4.6;controls.maxDistance=ROOM.maxOrbit;controls.minPolarAngle=T.MathUtils.degToRad(25);controls.maxPolarAngle=T.MathUtils.degToRad(86);
  controls.mouseButtons={LEFT:T.MOUSE.ROTATE,MIDDLE:T.MOUSE.DOLLY,RIGHT:null};controls.touches={ONE:T.TOUCH.ROTATE,TWO:T.TOUCH.DOLLY_ROTATE};controls.update();
  controls.addEventListener('change',()=>{dirty=true});controls.addEventListener('start',()=>{dragging=true;renderer.domElement.style.cursor='grabbing'});controls.addEventListener('end',()=>{dragging=false;renderer.domElement.style.cursor='grab'});
  reduce.addEventListener('change',()=>{if(!focused&&!transition)stopOrbit();controls.enableDamping=!reduce.matches;dirty=true});
@@ -145,10 +147,10 @@ try{
   const elapsed=Math.max(1,Math.min(100,now-previousFrame));previousFrame=now;
   frame=requestAnimationFrame(tick);if(document.hidden)return;
   if(transition){const t=Math.min(1,(now-transition.start)/transition.duration);
-   applyDestination(interpolatePose(transition.from,transition.to,t));camera.position.copy(room.constrainCamera(camera.position,look));
+   applyDestination(interpolatePose(transition.from,transition.to,t));
    dirty=true;if(t===1)finishTransition();
   }
-  if(!focused&&!transition){controls.dampingFactor=1-Math.pow(.88,elapsed/(1000/60));const changed=controls.update();if(changed||dirty){look.copy(controls.target);const safe=room.constrainCamera(orbitCamera.position,look);if(safe.distanceToSquared(camera.position)>1e-8){camera.position.copy(safe);dirty=true}}}
+  if(!focused&&!transition){controls.dampingFactor=1-Math.pow(.88,elapsed/(1000/60));const changed=controls.update();if(changed||dirty){look.copy(controls.target);const safe=room.constrainCamera(orbitCamera.position,camera.position,look);if(safe.distanceToSquared(orbitCamera.position)>1e-8){orbitCamera.position.copy(safe);stopOrbit()}if(safe.distanceToSquared(camera.position)>1e-8){camera.position.copy(safe);dirty=true}}}
   if(pressed&&performance.now()>=pressUntil){bmo.setPressed(pressed,false);pressed=null;dirty=true}
   const shouldBlink=!focused&&!reduce.matches&&(now%5800)>5630;
   if(shouldBlink!==blink){blink=shouldBlink;bmo.blink(blink);dirty=true}
@@ -164,7 +166,7 @@ try{
  }
  // Read-only measurements used to verify the actual rendered model and touch targets.
  window.portfolioDiagnostics=()=>({webgl:!renderer.getContext().isContextLost(),view:focused?'portfolio':'room',transitioning:!!transition,mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles,
-  orbit:{enabled:controls.enabled,azimuth:controls.getAzimuthalAngle(),polar:controls.getPolarAngle(),distance:camera.position.distanceTo(look),requestedDistance:orbitCamera.position.distanceTo(controls.target),position:camera.position.toArray(),target:look.toArray(),clear:room.cameraIsClear(camera.position),sightlineClear:room.sightlineClear(camera.position,look),dragging,dpr:renderer.getPixelRatio()},
+  orbit:{enabled:controls.enabled,azimuth:controls.getAzimuthalAngle(),polar:controls.getPolarAngle(),distance:camera.position.distanceTo(look),requestedDistance:orbitCamera.position.distanceTo(controls.target),position:camera.position.toArray(),target:look.toArray(),near:camera.near,far:camera.far,maxDistance:controls.maxDistance,dragging,dpr:renderer.getPixelRatio()},
   screenCorners:[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,y])=>project(new T.Vector3(bmo.layout.screen.x+x*bmo.screenWidth/2,bmo.layout.screen.y+y*bmo.screenHeight/2,bmo.layout.screen.z))),
   bmoCenter:project(new T.Vector3(0,1.8,.57)),bmoBounds:projectedBounds(),modelAudit:bmo.audit(),roomAudit:room.audit(),roomCoverage:[[-.99,-.99],[-.99,.99],[.99,-.99],[.99,.99]].map(([x,y])=>{const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2(x,y),camera);return ray.intersectObject(room.group,true).some(h=>h.object.isMesh&&!h.object.userData.outline)}),roomLandmarks:Object.fromEntries(Object.entries(room.landmarks).map(([key,obj])=>[key,project(obj.getWorldPosition(new T.Vector3()))])),
   buttons:bmo.controls.map(m=>({id:m.name,action:m.userData.action,...project(m.getWorldPosition(new T.Vector3()))})),

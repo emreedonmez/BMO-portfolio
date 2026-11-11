@@ -21,21 +21,21 @@ try{
  for(let i=0;i<8;i++){
   await page.mouse.move(1160,650);await page.mouse.down();await page.mouse.move(880,650,{steps:14});await page.mouse.up();
   const d=await info(page),turn=Math.atan2(Math.sin(d.orbit.azimuth-prior),Math.cos(d.orbit.azimuth-prior));total+=turn;prior=d.orbit.azimuth;
-  assert.equal(d.view,'room');assert.ok(d.orbit.clear&&d.orbit.sightlineClear);assert.ok(d.coverage.every(Boolean));assert.ok(Math.abs(d.orbit.distance-initial.orbit.distance)<1e-6);result.angles.push(d.orbit);
+  assert.equal(d.view,'room');assert.ok(d.coverage.every(Boolean));assert.ok(Math.abs(d.orbit.distance-initial.orbit.distance)<1e-6);assert.ok(Math.abs(d.orbit.position[1]-initial.orbit.position[1])<1e-6,'Horizontal dragging must never raise the camera');result.angles.push(d.orbit);
   await page.screenshot({path:`artifacts/orbit-drag-${i+1}.png`});
  }
  assert.ok(Math.abs(total)>Math.PI*2,'Real mouse drags must cross 360 degrees without a horizontal clamp');result.dragDegrees=total*180/Math.PI;
  // Full circle returns to the chosen distance after automatic collision dolly-in.
  await page.getByRole('button',{name:'Reset room view'}).click();
- for(let i=0;i<24;i++){await page.keyboard.press('ArrowLeft');const d=await info(page);assert.ok(d.orbit.clear);assert.ok(d.coverage.every(Boolean));if(i%6===5)await page.screenshot({path:`artifacts/orbit-quarter-${(i+1)/6}.png`})}
+ for(let i=0;i<24;i++){await page.keyboard.press('ArrowLeft');const d=await info(page);assert.ok(Math.abs(d.orbit.position[1]-initial.orbit.position[1])<1e-6);assert.ok(d.coverage.every(Boolean));if(i%6===5)await page.screenshot({path:`artifacts/orbit-quarter-${(i+1)/6}.png`})}
  const circle=await info(page);assert.ok(Math.abs(circle.orbit.distance-initial.orbit.distance)<1e-6);assert.ok(Math.abs(circle.orbit.requestedDistance-initial.orbit.requestedDistance)<1e-6);
  // Approach from behind BMO and return to that explored angle, with the screen attached throughout.
  for(let i=0;i<12;i++)await page.keyboard.press('ArrowLeft');const rear=await info(page);
  await page.emulateMedia({reducedMotion:'no-preference'});await page.getByRole('button',{name:'Meet BMO'}).click();
- await page.waitForTimeout(500);assert.ok((await info(page)).orbit.clear);await settle(page);
+ await page.waitForTimeout(500);await settle(page);
  assert.equal((await info(page)).orbit.enabled,false);
  await page.getByRole('button',{name:'Return to the room'}).click();await settle(page);const returned=await info(page);
- assert.ok(Math.abs(returned.orbit.azimuth-rear.orbit.azimuth)<1e-5);assert.ok(returned.orbit.clear);
+ assert.ok(Math.abs(returned.orbit.azimuth-rear.orbit.azimuth)<1e-5);
  // Normal damping settles, and controls still work when reduced motion changes live.
  await page.getByRole('button',{name:'Reset room view'}).click();await page.mouse.move(1100,650);await page.mouse.down();await page.mouse.move(970,590,{steps:15});await page.mouse.up();await page.waitForTimeout(1100);
  await page.waitForFunction(()=>{const angle=portfolioDiagnostics().orbit.azimuth,s=window.orbitTestStability??={angle,frames:0};s.frames=Math.abs(angle-s.angle)<1e-4?s.frames+1:0;s.angle=angle;return s.frames>=4});
@@ -44,13 +44,14 @@ try{
  result.extremes=[];
  for(const [name,key,wheel]of [['high-far','ArrowUp',10000],['low-far','ArrowDown',10000],['low-near','ArrowDown',-10000]]){
   for(let i=0;i<20;i++)await page.keyboard.press(key);await page.mouse.move(1100,600);await page.mouse.wheel(0,wheel);
-  for(let i=0;i<24;i++){await page.keyboard.press('ArrowLeft');const d=await info(page);assert.ok(d.orbit.clear&&d.orbit.sightlineClear,name+' camera must remain clear');assert.ok(d.coverage.every(Boolean),name+' must fill the viewport');assert.ok(Math.abs(d.orbit.distance-d.orbit.requestedDistance)<1e-6)}
+  const height=(await info(page)).orbit.position[1];
+  for(let i=0;i<24;i++){await page.keyboard.press('ArrowLeft');const d=await info(page);assert.ok(Math.abs(d.orbit.position[1]-height)<1e-6,name+' must not lift over furniture');assert.ok(d.coverage.every(Boolean),name+' must fill the viewport');assert.ok(Math.abs(d.orbit.distance-d.orbit.requestedDistance)<1e-6)}
   const d=await info(page);result.extremes.push({name,orbit:d.orbit});await page.screenshot({path:`artifacts/orbit-${name}.png`});
  }
  await page.keyboard.press('Home');
  for(const [w,h]of [[320,568],[360,800],[390,844],[430,932],[568,320],[844,390],[932,430],[768,1024],[1024,768],[1366,768],[1440,900],[1920,1080],[2560,1080]]){
   const context=await browser.newContext({viewport:{width:w,height:h},hasTouch:true,isMobile:w<=1024,deviceScaleFactor:w<600?3:1,reducedMotion:'reduce'}),p=await context.newPage();errors(p);
-  await p.goto('http://127.0.0.1:5173');await settle(p);const room=await info(p);console.log(`Checking touch layout ${w}x${h}`);assert.ok(room.coverage.every(Boolean));assert.ok(room.orbit.clear);
+  await p.goto('http://127.0.0.1:5173');await settle(p);const room=await info(p);console.log(`Checking touch layout ${w}x${h}`);assert.ok(room.coverage.every(Boolean));
   assert.ok(room.bounds.left>=0&&room.bounds.right<=w&&room.bounds.top>=0&&room.bounds.bottom<=h,'Initial BMO fits '+w+'x'+h);
   await p.getByRole('button',{name:'Meet BMO'}).tap();await settle(p);
   const layout=await p.evaluate(()=>{

@@ -22,7 +22,7 @@ The approved BMO model and portfolio content are unchanged. The same canonical c
 
 ## Rendering style
 
-A dedicated room ShaderMaterial supplies discrete plum shadow, base and highlight bands. It does not alter the approved BMO lighting. Geometry contours and world-space LineSegments2 strokes carry the sketch-like bark, seams and wood grain. These remain sharp at large resolutions.
+A dedicated room ShaderMaterial supplies discrete plum shadow, base and highlight bands. It does not alter the approved BMO lighting. Welded geometry contours outline solid objects. Surface marks use mipmapped painted maps on their actual 3D meshes, so seams, bark and artwork cannot fight competing geometry for depth.
 
 The palette follows the reference: plum ink `#2c2033`, violet timber `#6c5577`, lavender floor `#b0a2d1`, purple upholstery `#693872`, pink cushions `#bf5198` and burgundy table `#a14461`. There is no glossy PBR finish or exposed diorama edge.
 
@@ -30,7 +30,7 @@ The few illustrated album fronts are local 512px canvas vector drawings on physi
 
 ## Camera and input
 
-The same Three.js perspective camera renders the environment and BMO; the portfolio screen shares its projection through CSS3DRenderer. Clicking BMO follows a shortest spherical arc toward the model over 1.25 seconds. OrbitControls supplies unlimited horizontal drag rotation and wheel/two-finger zoom. Requested and rendered poses are separated so collision avoidance can lift over furniture without changing zoom. Moving the mouse alone leaves the camera still. Reduced motion removes automatic travel and inertia. Home resets the original composition; Room restores the explored angle.
+The same Three.js perspective camera renders the environment and BMO; the portfolio screen shares its projection through CSS3DRenderer. Clicking BMO follows a shortest spherical arc toward the model over 1.25 seconds. OrbitControls supplies unlimited horizontal drag rotation and wheel/two-finger zoom. A swept camera path collides only with actual mesh surfaces. An occluding prop does not change camera height or pitch. Moving the mouse alone leaves the camera still. Reduced motion removes automatic travel and inertia. Home resets the original composition; Room restores the explored angle.
 
 Physical model buttons, mouse/touch screen menus, keyboard controls, confirmations, PDF and fallback text remain available. Rendering is demand-driven; static room frames are not continuously redrawn.
 
@@ -51,3 +51,15 @@ The approved BMO and portfolio sources are preserved. Side/rear timber walls, a 
 Touch uses a single-finger orbit and two-finger zoom. Canvas pointer capture distinguishes dragging from tapping BMO and cancels tap activation on multiple pointers. Text scrolling remains native within the LCD. A compact two-column menu, large physical alternatives, safe-area spacing and a screen-first landscape camera improve small-screen use. Coarse-pointer rendering caps DPR at 1.5 with the same shaders, colors, outlines and antialiasing. The screen starts inside the clipped world container so mobile initial layout cannot expand the viewport before the first WebGL frame.
 
 Official control reference: https://threejs.org/docs/pages/OrbitControls.html. Exact prechange release: `checkpoint-before-360-v1.2.0`; deployment `3cf52e69-45b6-4d22-a81b-657d83f304ab`.
+
+## Compact room and surface correction · v1.4.0
+
+The room is bounded to 70 × 74 × 28 world units and the orbit radius to 27.5. Windows remain actual wall openings. Floor, rug, timber and dial artwork are part of the mesh surfaces. Single-channel mipmapped ink masks preserve bark detail with one quarter of RGBA texture storage. The custom cel shader antialiases its shade thresholds and removes high-frequency procedural noise.
+
+Thin rug geometry has no inverted back-face hull. Shadows share an explicit ground offset and stable draw order. The render camera uses a 0.2–160 depth interval. Solid-object outlines weld coincident positions before extrusion so cap/side seams cannot split apart.
+
+Trees have clipped bark openings, conforming rim geometry and recessed bowls; no flat dark discs intersect the trunk. The clock uses a tangent mount with physical clearance and a painted face. Album frames have supports and separated artwork planes; the radio, player and headphones occupy distinct positions. The headset rests on a separate stand. Book and table marks are painted onto the actual surfaces.
+
+Camera sweeps follow the orbit arc and preserve the input's vertical component. Occlusion is allowed; it never triggers automatic lifting. Only a direct hit against actual solid mesh triangles can stop travel.
+
+Exact previous release: `checkpoint-before-room-polish-v1.3.0`, Cloudflare `d0730143-d5a7-4fae-be0d-55a41deb6c20`. Technical references: https://threejs.org/docs/pages/Material.html, https://threejs.org/docs/pages/CanvasTexture.html and https://threejs.org/docs/pages/WebGLRenderer.html.
