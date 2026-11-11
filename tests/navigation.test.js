@@ -28,3 +28,13 @@ test('compact portrait and short landscape use a readable screen close-up',()=>{
  assert.equal(portfolioPose(844,390,true).look.y,2.52);
  assert.equal(portfolioPose(1440,810).look.y,1.85);
 });
+
+test('the LCD fits between safe areas and mobile controls in either orientation',()=>{
+ for(const [w,h,insets]of [[428,926,{top:47,bottom:34}],[428,746,{top:47,bottom:34}],[926,428,{left:47,right:47,bottom:21}],[568,320,{}]]){
+  const pose=portfolioPose(w,h,true,insets),camera=new T.PerspectiveCamera(42,w/h,.2,160);
+  camera.position.copy(pose.position);camera.lookAt(pose.look);camera.setViewOffset(w,h,pose.offset.x,pose.offset.y,w,h);camera.updateMatrixWorld();
+  const short=h<550&&w/h>1.2,edge=s=>Math.max(12,insets[s]||0),points=[];
+  for(const x of [-1,1])for(const y of [-1,1]){const p=new T.Vector3(x*1.06,2.52+y*1.49725/2,.59).project(camera);points.push({x:(p.x+1)*w/2,y:(1-p.y)*h/2})}
+  for(const p of points){assert.ok(p.x>=edge('left')+(short?66:0)-1e-6);assert.ok(p.x<=w-edge('right')-(short?106:0)+1e-6);assert.ok(p.y>=edge('top')+(short?0:56)-1e-6);assert.ok(p.y<=h-edge('bottom')-(short?0:56)+1e-6)}
+ }
+});

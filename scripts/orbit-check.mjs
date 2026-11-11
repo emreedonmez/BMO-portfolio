@@ -59,7 +59,7 @@ try{
    const menu=[...document.querySelectorAll('.screen-menu button')].map(rect),lcd=rect(document.querySelector('#portfolio')),controls=rect(document.querySelector('.accessible-controls'));
    return {menu,lcd,controls,overflow:document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight,zoom:visualViewport.scale};
   });
-  assert.ok(!layout.overflow);assert.ok(layout.lcd.x>=-1&&layout.lcd.right<=w+1);assert.ok(layout.lcd.y>=0&&layout.lcd.bottom<=h-55);
+  assert.ok(!layout.overflow);assert.ok(layout.lcd.x>=-1&&layout.lcd.right<=w+1);assert.ok(layout.lcd.y>=0&&layout.lcd.bottom<=h-(h<550&&w/h>1.2?0:55));
   layout.menu.forEach(m=>{assert.ok(m.h>=44-1e-3&&m.w>=44,`${w}x${h} touch targets ${m.w}x${m.h}`);assert.ok(m.bottom<=layout.lcd.bottom&&m.right<=layout.lcd.right)});
   assert.ok(layout.controls.y>=0&&layout.controls.bottom<=h&&layout.controls.right<=w);assert.ok(layout.controls.right<=layout.lcd.x||layout.controls.y>=layout.lcd.bottom,'Touch controls must not cover the LCD');assert.equal(layout.zoom,1);
   await p.getByRole('button',{name:'My About'}).tap();const before=await p.locator('.screen-content').evaluate(e=>e.scrollTop);await p.getByRole('button',{name:'Down',exact:true}).tap();assert.ok(await p.locator('.screen-content').evaluate(e=>e.scrollTop)>before);

@@ -1,6 +1,5 @@
 import './style.css';
 import * as T from 'three';
-import {CSS3DRenderer,CSS3DObject} from 'three/addons/renderers/CSS3DRenderer.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {createBMO} from './scene.js';
 import {createRoom} from './room.js';
@@ -8,14 +7,17 @@ import {roomAnchor} from './bmo-layout.js';
 import {createPortfolio} from './portfolio.js';
 import {interpolatePose,portfolioPose} from './navigation.js';
 import {ROOM} from './room-geometry.js';
+import {displayTransform} from './display.js';
 
 const $=s=>document.querySelector(s),screen=$('#portfolio');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
-let renderer,cssRenderer,scene,camera,orbitCamera,bmo,room,controls,frame=0,transition=null,focused=false,dragging=false;
+let renderer,scene,camera,orbitCamera,bmo,room,controls,frame=0,resizeFrame=0,transition=null,focused=false,dragging=false;
 let sound=false,audio,dirty=true,pressed=null,pressUntil=0,blink=false;
 const look=new T.Vector3(),offset=new T.Vector2();
 let roomPose,closePose,exploredPose;
 const coarsePointer=matchMedia('(pointer: coarse)');
+const viewport={width:1,height:1};
+function measureViewport(){const rect=$('#world').getBoundingClientRect();return {width:Math.max(1,rect.width),height:Math.max(1,rect.height)}}
 
 function cue(type){
  if(!sound)return;
@@ -28,16 +30,23 @@ function toggleSound(){sound=!sound;$('#sound').setAttribute('aria-pressed',Stri
 const portfolio=createPortfolio(screen,{onRoom:()=>setView(false),onSound:toggleSound,onCue:cue});
 
 function views(){
- const anchor=roomAnchor(innerWidth,innerHeight);
- roomPose={position:new T.Vector3(-5.5,6.5,23),look:new T.Vector3(0,1.62,.28),offset:new T.Vector2(innerWidth/2-anchor.x,innerHeight/2-anchor.y)};
- closePose=portfolioPose(innerWidth,innerHeight,coarsePointer.matches);
+ const {width,height}=viewport,anchor=roomAnchor(width,height),style=getComputedStyle(document.documentElement);
+ const insets=Object.fromEntries(['top','right','bottom','left'].map(side=>[side,parseFloat(style.getPropertyValue(`--safe-${side}`))||0]));
+ roomPose={position:new T.Vector3(-5.5,6.5,23),look:new T.Vector3(0,1.62,.28),offset:new T.Vector2(width/2-anchor.x,height/2-anchor.y)};
+ closePose=portfolioPose(width,height,coarsePointer.matches,insets);
  document.documentElement.style.setProperty('--entry-x',`${anchor.x}px`);
- document.documentElement.style.setProperty('--entry-y',`${Math.min(innerHeight-55,anchor.y+innerHeight*.135)}px`);
+ const entryLimit=(coarsePointer.matches||width<=700)&&height/width>1?height-Math.max(16,insets.bottom)-90:height-55;
+ document.documentElement.style.setProperty('--entry-y',`${Math.min(entryLimit,anchor.y+height*.135)}px`);
 }
 function applyPose(){
- camera.lookAt(look);camera.setViewOffset(innerWidth,innerHeight,offset.x,offset.y,innerWidth,innerHeight);camera.updateMatrixWorld();
+ const {width,height}=viewport;
+ camera.lookAt(look);camera.setViewOffset(width,height,offset.x,offset.y,width,height);camera.updateMatrixWorld();
 }
-function paint(){applyPose();renderer.render(scene,camera);cssRenderer.render(scene,camera);dirty=false}
+function paint(){
+ applyPose();renderer.render(scene,camera);
+ const display=displayTransform(camera,bmo.layout.screen,viewport.width,viewport.height);
+ screen.style.transform=display.transform;screen.style.setProperty('--lcd-scale',String(display.pixelScale));screen.classList.toggle('display-facing-away',!display.visible);dirty=false;
+}
 function visibility(){
  document.body.classList.toggle('focused',focused);
  $('#room-return').hidden=!focused;$('.control-guide').hidden=!focused;$('.accessible-controls').hidden=!focused;
@@ -92,7 +101,8 @@ document.addEventListener('keydown',e=>{
  e.preventDefault();if(transition&&key!=='back')return;portfolio.action(key);
 });
 function fallback(error){
- console.warn('3D character unavailable:',error);cancelAnimationFrame(frame);controls?.dispose();renderer?.domElement.remove();cssRenderer?.domElement.remove();renderer=null;
+ console.warn('3D character unavailable:',error);cancelAnimationFrame(frame);cancelAnimationFrame(resizeFrame);controls?.dispose();renderer?.domElement.remove();renderer=null;
+ screen.style.removeProperty('transform');screen.style.removeProperty('--lcd-scale');screen.classList.remove('display-facing-away');screen.inert=false;document.body.classList.remove('transitioning');
  $('#fallback').hidden=false;$('#fallback-content').append(screen);document.body.classList.add('fallback-mode','ready');focused=true;visibility();
  $('#room-return').hidden=true;$('#room-reset').hidden=true;$('#room-hint').hidden=true;$('.control-guide').hidden=true;$('.accessible-controls').hidden=true;$('#loading').hidden=true;
 }
@@ -100,14 +110,14 @@ function fallback(error){
 try{
  await document.fonts.ready;
  scene=new T.Scene();scene.background=new T.Color('#48354f');
- camera=new T.PerspectiveCamera(42,innerWidth/innerHeight,.2,160);
+ Object.assign(viewport,measureViewport());
+ camera=new T.PerspectiveCamera(42,viewport.width/viewport.height,.2,160);
  renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
- renderer.setPixelRatio(Math.min(devicePixelRatio,coarsePointer.matches?1.5:2));renderer.setSize(innerWidth,innerHeight,false);renderer.setClearColor(0,0);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NoToneMapping;
+ renderer.setPixelRatio(Math.min(devicePixelRatio,coarsePointer.matches?1.5:2));renderer.setSize(viewport.width,viewport.height,false);renderer.setClearColor(0,0);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NoToneMapping;
  $('#world').append(renderer.domElement);
- cssRenderer=new CSS3DRenderer();cssRenderer.setSize(innerWidth,innerHeight);cssRenderer.domElement.className='css3d-layer';$('#world').append(cssRenderer.domElement);
+ $('#world').append(screen);
  room=createRoom(scene);bmo=createBMO(scene);
  const contact=bmo.group.getObjectByName('floor-contact-shadow');contact.position.y=ROOM.floor+.012;contact.renderOrder=10;contact.material.polygonOffset=true;contact.material.polygonOffsetFactor=-1;contact.material.polygonOffsetUnits=-1;
- const lcd=new CSS3DObject(screen);lcd.position.copy(bmo.screenPosition);lcd.scale.setScalar(bmo.screenWidth/640);scene.add(lcd);
  views();applyDestination(roomPose);
  // Only the actual camera path can meet a solid; occlusion never changes the viewing angle.
  orbitCamera=camera.clone();controls=new OrbitControls(orbitCamera,renderer.domElement);controls.target.copy(look);controls.enablePan=false;controls.enableDamping=!reduce.matches;controls.dampingFactor=.12;controls.rotateSpeed=.45;
@@ -119,7 +129,7 @@ try{
  exploredPose=currentPose();visibility();paint();
 
  const raycaster=new T.Raycaster(),pointer=new T.Vector2(),pointers=new Set();let pointerDown=null;
- function hit(e){pointer.set(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(bmo.group,true).find(h=>h.object.isMesh&&!h.object.userData.outline&&!h.object.userData.shadow)}
+ function hit(e){const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(bmo.group,true).find(h=>h.object.isMesh&&!h.object.userData.outline&&!h.object.userData.shadow)}
  renderer.domElement.addEventListener('pointerdown',e=>{pointers.add(e.pointerId);if(pointers.size>1)pointerDown=null;else if(e.button===0)pointerDown={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false}});
  renderer.domElement.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);pointerDown=null});
  addEventListener('blur',()=>{pointerDown=null;pointers.clear();dragging=false});
@@ -136,12 +146,23 @@ try{
  renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();fallback(new Error('WebGL context lost'))});
  function resize(){
-  if(!renderer)return;camera.aspect=innerWidth/innerHeight;views();renderer.setPixelRatio(Math.min(devicePixelRatio,coarsePointer.matches?1.5:2));renderer.setSize(innerWidth,innerHeight,false);cssRenderer.setSize(innerWidth,innerHeight);
-  if(focused)applyDestination(closePose);else{if(transition)applyDestination({...exploredPose,offset:roomPose.offset});offset.copy(roomPose.offset)}
-  finishTransition(false);dirty=true;paint();
+  resizeFrame=0;if(!renderer)return;
+  const measured=measureViewport(),changed=Math.abs(measured.width-viewport.width)>.01||Math.abs(measured.height-viewport.height)>.01;
+  renderer.setPixelRatio(Math.min(devicePixelRatio,coarsePointer.matches?1.5:2));
+  if(changed){
+   Object.assign(viewport,measured);camera.aspect=viewport.width/viewport.height;views();renderer.setSize(viewport.width,viewport.height,false);
+   if(transition){
+    const now=performance.now(),remaining=Math.max(0,transition.duration-(now-transition.start));
+    const to=focused?closePose:{...exploredPose,offset:roomPose.offset.clone()};
+    transition={start:now,duration:Math.max(1,remaining),from:currentPose(),to};
+   }else if(focused)applyDestination(closePose);else offset.copy(roomPose.offset);
+  }
+  dirty=true;paint();
  }
- addEventListener('resize',resize);visualViewport?.addEventListener('resize',resize);
- new ResizeObserver(resize).observe($('#world'));
+ const scheduleResize=()=>{if(!resizeFrame)resizeFrame=requestAnimationFrame(resize)};
+ addEventListener('resize',scheduleResize);visualViewport?.addEventListener('resize',scheduleResize);
+ coarsePointer.addEventListener('change',()=>{views();if(focused&&!transition)applyDestination(closePose);scheduleResize()});
+ new ResizeObserver(scheduleResize).observe($('#world'));
  let previousFrame=performance.now();
  function tick(now){
   const elapsed=Math.max(1,Math.min(100,now-previousFrame));previousFrame=now;
@@ -158,14 +179,14 @@ try{
  }
  frame=requestAnimationFrame(tick);document.body.classList.add('ready');$('#loading').hidden=true;
 
- const project=point=>{const p=point.clone().project(camera);return {x:(p.x+1)*innerWidth/2,y:(1-p.y)*innerHeight/2}};
+ const project=point=>{const p=point.clone().project(camera),rect=$('#world').getBoundingClientRect();return {x:rect.left+(p.x+1)*viewport.width/2,y:rect.top+(1-p.y)*viewport.height/2}};
  function projectedBounds(){const bounds={left:Infinity,top:Infinity,right:-Infinity,bottom:-Infinity};bmo.group.updateMatrixWorld(true);
   bmo.group.traverse(m=>{if(!m.isMesh||m.userData.shadow||m.userData.outline)return;m.geometry.computeBoundingBox();const b=m.geometry.boundingBox;
    for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const p=project(new T.Vector3(x,y,z).applyMatrix4(m.matrixWorld));bounds.left=Math.min(bounds.left,p.x);bounds.right=Math.max(bounds.right,p.x);bounds.top=Math.min(bounds.top,p.y);bounds.bottom=Math.max(bounds.bottom,p.y)}
   });return {...bounds,width:bounds.right-bounds.left,height:bounds.bottom-bounds.top};
  }
  // Read-only measurements used to verify the actual rendered model and touch targets.
- window.portfolioDiagnostics=()=>({webgl:!renderer.getContext().isContextLost(),view:focused?'portfolio':'room',transitioning:!!transition,mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles,
+ window.portfolioDiagnostics=()=>({webgl:!renderer.getContext().isContextLost(),view:focused?'portfolio':'room',transitioning:!!transition,viewport:{...viewport},mode:portfolio.mode,selected:portfolio.selected,meshes:renderer.info.render.calls,triangles:renderer.info.render.triangles,
   orbit:{enabled:controls.enabled,azimuth:controls.getAzimuthalAngle(),polar:controls.getPolarAngle(),distance:camera.position.distanceTo(look),requestedDistance:orbitCamera.position.distanceTo(controls.target),position:camera.position.toArray(),target:look.toArray(),near:camera.near,far:camera.far,maxDistance:controls.maxDistance,dragging,dpr:renderer.getPixelRatio()},
   screenCorners:[[-1,-1],[-1,1],[1,-1],[1,1]].map(([x,y])=>project(new T.Vector3(bmo.layout.screen.x+x*bmo.screenWidth/2,bmo.layout.screen.y+y*bmo.screenHeight/2,bmo.layout.screen.z))),
   bmoCenter:project(new T.Vector3(0,1.8,.57)),bmoBounds:projectedBounds(),modelAudit:bmo.audit(),roomAudit:room.audit(),roomCoverage:[[-.99,-.99],[-.99,.99],[.99,-.99],[.99,.99]].map(([x,y])=>{const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2(x,y),camera);return ray.intersectObject(room.group,true).some(h=>h.object.isMesh&&!h.object.userData.outline)}),roomLandmarks:Object.fromEntries(Object.entries(room.landmarks).map(([key,obj])=>[key,project(obj.getWorldPosition(new T.Vector3()))])),

@@ -10,7 +10,7 @@ An interactive 3D portfolio set inside a cartoon treehouse. Meet BMO, explore th
 
 The room and BMO share a real Three.js scene. Furniture, tree trunks, recessed cavities, windows, and small props are modelled individually. Painted surface textures and cel shading preserve the illustrated appearance while the camera moves through the scene.
 
-The portfolio interface is rendered on BMO's display with CSS3DRenderer, keeping readable HTML content aligned with the 3D model. All runtime assets are bundled locally; the application does not require an external model service or asset CDN.
+The portfolio interface uses camera-projected HTML aligned with BMO's 3D display. During camera travel it follows the screen's perspective; once settled, it uses a flat layer so mobile browsers can scroll and focus content without shifting the display. All runtime assets are bundled locally; the application does not require an external model service or asset CDN.
 
 ### Features
 
@@ -29,9 +29,12 @@ The portfolio interface is rendered on BMO's display with CSS3DRenderer, keeping
 | ![Individually modelled gramophone, frames, radio, and headphones](docs/images/gramophone.png) | ![A recessed cavity following the tree trunk's curved surface](docs/images/tree-detail.png) |
 
 <details>
-<summary>Mobile room view</summary>
+<summary>Mobile room and portfolio views</summary>
 
 <img src="docs/images/mobile.png" alt="The portfolio room on a portrait mobile viewport" width="300">
+
+
+<img src="docs/images/mobile-portfolio.png" alt="Portfolio content aligned with BMO on a portrait mobile screen" width="300">
 
 </details>
 
@@ -99,6 +102,7 @@ src/
   room-geometry.js   Hollow tree geometry and room boundaries
   room-surfaces.js   Procedurally painted surface textures
   navigation.js      Camera transitions and responsive close-up views
+  display.js         Camera projection and stable HTML screen placement
   content.js         Portfolio sections, copy, and external links
   portfolio.js       Screen rendering and navigation state
   style.css          Screen interface and responsive styling
@@ -131,11 +135,20 @@ node scripts/detail-check.mjs
 
 These scripts use Playwright with an isolated browser profile. They currently point to Braveâ€™s standard Windows executable path; update `executablePath` in the scripts to use your installed Chromium-compatible browser. Generated screenshots and measurements are written to the ignored `artifacts/` directory.
 
+The mobile regression suite uses bundled Chromium and WebKit engines. Install them once, keep the development server running, then run:
+
+```sh
+npx playwright install chromium webkit
+node scripts/mobile-check.mjs
+```
+
+It checks all portfolio sections, LCD alignment after scrolling and focus, portrait/landscape changes, browser-height changes, safe areas, touch targets, and the non-WebGL view. It includes a 428 x 926 viewport for iPhone 13 Pro Max.
+
 Touch and viewport checks use browser emulation. They do not replace testing on physical phones or measuring hardware frame rate.
 
 ## Technology
 
-[Three.js](https://threejs.org/) handles the 3D scene and CSS3D display. [Vite](https://vite.dev/) provides local development and production bundling. The application is written in JavaScript, HTML, and CSS; [Playwright](https://playwright.dev/) supports browser checks.
+[Three.js](https://threejs.org/) handles the 3D scene and the camera used to project the HTML display. [Vite](https://vite.dev/) provides local development and production bundling. The application is written in JavaScript, HTML, and CSS; [Playwright](https://playwright.dev/) supports browser checks.
 
 ## Attribution and reuse
 
